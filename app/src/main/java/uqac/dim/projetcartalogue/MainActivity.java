@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         int[] pixelsMatchingToType = new int[PokemonTypeColors.values().length];
         int[] allPixels = new int[size];
         bitmap.getPixels(allPixels,0,bitmap.getWidth(),0,0,bitmap.getWidth(),bitmap.getHeight());
-        for (int i = 0; i < size; i+=100) {
+        for (int i = 0; i < size; i+=300) {
             Color color = Color.valueOf(allPixels[i]);
             int index = 0;
             for (PokemonTypeColors type:PokemonTypeColors.values())
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                 double differenceT = Math.abs(HCT1[2] - HCT2[2]);
                 //int difference = Math.abs(rgb(type.getR(),type.getG(),type.getB()) - allPixels[i] );
 
-                if(differenceHUE < 10 && differenceT < 10 /*&& differenceC < 10*/){
+                if(differenceHUE < 5 && differenceT < 10 /*&& differenceC < 10*/){
                 //if((color.red() >typeColor.red() -colorMargin && color.red() < typeColor.red() +colorMargin) && (color.green() > typeColor.green() -colorMargin && color.green() < typeColor.green() +colorMargin) && (color.blue() > typeColor.blue() - colorMargin && color.blue() < typeColor.blue() + colorMargin)){
                     pixelsMatchingToType[index]++;
                     break;
