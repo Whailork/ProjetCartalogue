@@ -25,7 +25,17 @@
 
         </TextView>
 
+
     </ScrollView>
+    <TextView
+        android:id="@+id/typeTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:textColor="@color/black"
+        android:text="type">
+
+    </TextView>
     <LinearLayout
         android:id="@+id/btnLayout"
         android:layout_width="match_parent"
@@ -61,6 +71,7 @@
             android:layout_margin="8dp">
 
         </Button>
+
 
     </LinearLayout>
 
