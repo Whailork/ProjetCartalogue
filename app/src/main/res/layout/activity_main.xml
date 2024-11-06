@@ -25,7 +25,17 @@
 
         </TextView>
 
+
     </ScrollView>
+    <TextView
+        android:id="@+id/typeTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:textColor="@color/black"
+        android:text="type">
+
+    </TextView>
     <LinearLayout
         android:id="@+id/btnLayout"
         android:layout_width="match_parent"
@@ -43,6 +53,16 @@
         </Button>
 
         <Button
+            android:id="@+id/CameraBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Camera"
+            android:layout_margin="8dp">
+
+        </Button>
+
+        <Button
             android:id="@+id/CopyTextBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -51,6 +71,7 @@
             android:layout_margin="8dp">
 
         </Button>
+
 
     </LinearLayout>
 
