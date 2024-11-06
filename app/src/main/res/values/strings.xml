@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">ProjetCartalogue</string>
     <string name="cartalogue">Cartalogue</string>
+    <string name="nomcarte">nomCarte</string>
+    <string name="numero">numero</string>
+    <string name="typepokemon">typePokemon</string>
 </resources>

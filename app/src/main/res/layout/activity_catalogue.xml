@@ -13,10 +13,11 @@
         android:textAlignment="center"
         android:textSize="40sp"
         android:textColor="@color/white"/>
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="500dp"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="10dp"
-        />
+        tools:layout_editor_absoluteY="10dp" />
 </LinearLayout>
