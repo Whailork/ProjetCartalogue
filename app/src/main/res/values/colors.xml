@@ -2,4 +2,24 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="normal">#929DA3</color>
+    <color name="fighting">#CE416B</color>
+    <color name="flying">#8FA9DE</color>
+    <color name="poison">#AA6BC8</color>
+    <color name="ground">#D97845</color>
+    <color name="rock">#C5B78C</color>
+    <color name="bug">#91C12F</color>
+    <color name="ghost">#91C12F</color>
+    <color name="steel">#5A8EA2</color>
+    <color name="fire">#FF9D55</color>
+    <color name="water">#FF9D55</color>
+    <color name="grass">#63BC5A</color>
+    <color name="electric">#F4D23C</color>
+    <color name="psychic">#FA7179</color>
+    <color name="ice">#73CEC0</color>
+    <color name="dragon">#0B6DC3</color>
+    <color name="dark">#5A5465</color>
+    <color name="fairy">#EC8FE6</color>
+
 </resources>
