@@ -22,6 +22,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -43,6 +44,14 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -54,6 +63,61 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_CODE = 100;
     private static final int REQUEST_IMAGES_CODE = 110;
     public final double colorMargin = 0.3;
+    //ordre :
+    /*
+    TOP
+    * Base / basic
+    * Niveau/ stage
+    * alolan
+    * evolves from
+    * nom
+    * pv
+
+     MIDDLE
+    * NO.
+    * pokemon type
+    * height
+    * weight
+    * attaques
+
+    BOTTOM
+    * weakness
+    * resistance
+    * description
+    * retreat
+    * copyright
+    * illustration
+    * rarity*/
+
+    //TOP
+    Pattern basicEn = Pattern.compile("Basic", Pattern.CASE_INSENSITIVE);
+    Pattern basicFR = Pattern.compile("Base", Pattern.CASE_INSENSITIVE);
+
+    Pattern stageEN = Pattern.compile("Stage",Pattern.CASE_INSENSITIVE);
+    Pattern stageFR = Pattern.compile("niveau", Pattern.CASE_INSENSITIVE);
+
+    Pattern alolanEN = Pattern.compile("Alolan",Pattern.CASE_INSENSITIVE);
+    Pattern alolanFR = Pattern.compile("d'alola",2);
+
+    Pattern pvEN = Pattern.compile("HP",Pattern.CASE_INSENSITIVE);
+    Pattern pvFR = Pattern.compile("PV",2);
+
+    //MIDDLE
+    Pattern numberEN = Pattern.compile("^NO\\.\\s*\\d{3}$",Pattern.CASE_INSENSITIVE);
+    Pattern numberFR = Pattern.compile("^N°\\s*\\d{3}$",Pattern.CASE_INSENSITIVE);
+
+    Pattern pokemonTypeEN = Pattern.compile(".*pokémon",2);
+    Pattern pokemonTypeFR = Pattern.compile("pokémon.*",2);
+
+    Pattern heightEN = Pattern.compile("HT : .*",2);
+    Pattern heightFR = Pattern.compile("Taille : .* m$",2);
+
+    Pattern weightEN = Pattern.compile("WT : .*",2);
+    Pattern weightFR = Pattern.compile("Poids : .* kg$");
+
+
+
+    Pattern noSpecialChar = Pattern.compile("[^\\w\\s]",Pattern.CASE_INSENSITIVE);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -190,7 +254,32 @@ public class MainActivity extends AppCompatActivity {
         task.addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
+                //Matcher m  = numberEN.matcher();
                 txtScannedData.setText(task.getResult().getText());
+                List<Text.TextBlock> result = task.getResult().getTextBlocks();
+                ArrayList<Text.TextBlock> inReadingOrder = new ArrayList<Text.TextBlock>();
+
+                for(int x = 0; x < result.size(); x++)
+                {
+                    if(inReadingOrder.isEmpty()){
+                        inReadingOrder.add(result.get(x));
+                    }
+                    else{
+                        for(int y =0;y < inReadingOrder.size();y++)
+                        {
+                            if(result.get(x).getBoundingBox().left < inReadingOrder.get(y).getBoundingBox().left){
+                                inReadingOrder.add(y,result.get(x));
+                                break;
+                            }
+
+                        }
+                        if (!inReadingOrder.contains(result.get(x))){
+                            inReadingOrder.add(result.get(x));
+                        }
+                    }
+                }
+                
+
             }
         });
 
