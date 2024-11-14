@@ -18,7 +18,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/carte"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <ImageView
@@ -28,14 +28,13 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/abomasnow_mega"
-                />
+                app:srcCompat="@drawable/abomasnow_mega" />
 
             <TextView
                 android:id="@+id/numero"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_width="70dp"
+                android:layout_height="21dp"
+                android:layout_marginTop="5dp"
                 android:text="@string/numero"
                 app:layout_constraintStart_toEndOf="@+id/imageCarte"
                 app:layout_constraintTop_toTopOf="@id/carte"
@@ -47,7 +46,7 @@
                 android:id="@+id/nomCarte"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="3dp"
                 android:text="@string/nomcarte"
                 app:layout_constraintStart_toEndOf="@+id/imageCarte"
                 app:layout_constraintTop_toBottomOf="@+id/numero" />
@@ -57,12 +56,11 @@
                 android:id="@+id/typePokemon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/typepokemon"
                 app:layout_constraintStart_toEndOf="@+id/imageCarte"
                 app:layout_constraintTop_toBottomOf="@+id/nomCarte"
-                tools:layout_editor_absoluteX="124dp"
-                tools:layout_editor_absoluteY="7dp"
+                android:paddingBottom="5dp"
 
                 />
 

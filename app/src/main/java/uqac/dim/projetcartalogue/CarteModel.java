@@ -2,7 +2,7 @@ package uqac.dim.projetcartalogue;
 
 import android.media.Image;
 
-public class carteModel {
+public class CarteModel {
     String numero;
     String nom;
     String type;
@@ -15,13 +15,13 @@ public class carteModel {
     String height;
     String weight;
 
-    public carteModel(Image image, String numero, String nom, String type) {
+    public CarteModel(Image image, String numero, String nom, String type) {
         this.image = image;
         this.type = type;
         this.nom = nom;
         this.numero = numero;
     }
-    public carteModel(){
+    public CarteModel(){
         image = null;
         type = "";
         nom = "";
