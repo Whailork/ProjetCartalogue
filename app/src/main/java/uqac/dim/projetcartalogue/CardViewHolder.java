@@ -14,15 +14,9 @@ public class CardViewHolder extends RecyclerView.ViewHolder {
     CardViewHolder(View itemView)
     {
         super(itemView);
-        imageCarte
-                = (ImageView) itemView
-                .findViewById(R.id.imageCarte);
-        numero
-                = (TextView)itemView
-                .findViewById(R.id.numero);
-        nomCarte
-                = (TextView)itemView
-                .findViewById(R.id.nomCarte);
+        imageCarte = (ImageView) itemView.findViewById(R.id.imageCarte);
+        numero = (TextView)itemView.findViewById(R.id.numero);
+        nomCarte = (TextView)itemView.findViewById(R.id.nomCarte);
         typePokemon = (TextView)itemView.findViewById(R.id.typePokemon);
         view  = itemView;
     }

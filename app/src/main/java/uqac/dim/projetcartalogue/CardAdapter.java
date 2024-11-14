@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collections;
@@ -19,21 +20,19 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
         this.context = context;
     }
 
+    @NonNull
     @Override
-    public CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+    public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-
         View inflatedView = layoutInflater.inflate(R.layout.recycler_view_row,parent,false);
-        CardViewHolder viewHolder = new CardViewHolder(inflatedView);
 
 
-        return viewHolder;
+        return new CardViewHolder(inflatedView);
     }
 
     @Override
     public void onBindViewHolder(final CardViewHolder viewHolder, final int position) {
-        //viewHolder.imageCarte.setBackground(); trouver image par nom
+        viewHolder.imageCarte.setImageResource(listCarte.get(position).imageId);
         viewHolder.numero.setText(listCarte.get(position).numero);
         viewHolder.nomCarte.setText(listCarte.get(position).nom);
         viewHolder.typePokemon.setText(listCarte.get(position).type);;
@@ -43,9 +42,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
     public int getItemCount() {
         return listCarte.size();
     }
+
     @Override
-    public void onAttachedToRecyclerView(
-            RecyclerView recyclerView)
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
     {
         super.onAttachedToRecyclerView(recyclerView);
     }

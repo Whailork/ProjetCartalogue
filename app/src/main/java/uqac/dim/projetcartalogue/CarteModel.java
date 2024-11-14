@@ -6,7 +6,7 @@ public class CarteModel {
     String numero;
     String nom;
     String type;
-    Image image ;
+    int imageId ;
     String stage;
     boolean alolan;
     String evolvesFrom;
@@ -15,14 +15,14 @@ public class CarteModel {
     String height;
     String weight;
 
-    public CarteModel(Image image, String numero, String nom, String type) {
-        this.image = image;
+    public CarteModel(int imageId, String numero, String nom, String type) {
+        this.imageId = imageId;
         this.type = type;
         this.nom = nom;
         this.numero = numero;
     }
     public CarteModel(){
-        image = null;
+        imageId = Integer.parseInt(null);
         type = "";
         nom = "";
         numero = "";
@@ -40,8 +40,8 @@ public class CarteModel {
         return type;
     }
 
-    public Image getImage() {
-        return image;
+    public int getImage() {
+        return imageId;
     }
 
     public void setNumero(String numero) {
@@ -56,8 +56,8 @@ public class CarteModel {
         this.type = type;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setImage(int image) {
+        this.imageId = image;
     }
 
     public String getStage() {
