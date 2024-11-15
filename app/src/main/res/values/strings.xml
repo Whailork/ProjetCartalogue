@@ -4,4 +4,6 @@
     <string name="nomcarte">nomCarte</string>
     <string name="numero">numero</string>
     <string name="typepokemon">typePokemon</string>
+    <string name="open" />
+    <string name="close" />
 </resources>

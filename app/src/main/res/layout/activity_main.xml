@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:title="Cartalogue" />
 
 
     <ScrollView
@@ -48,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Capture"
-            android:layout_margin="8dp">
+            android:layout_marginTop="670dp">
 
         </Button>
 
@@ -58,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Camera"
-            android:layout_margin="8dp">
+            android:layout_marginTop="670dp">
 
         </Button>
 
@@ -68,11 +73,18 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Copy"
-            android:layout_margin="8dp">
+            android:layout_marginTop="670dp">
 
         </Button>
 
 
     </LinearLayout>
-
-</RelativeLayout>
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/nav_header_menu"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"/>
+</androidx.drawerlayout.widget.DrawerLayout>
