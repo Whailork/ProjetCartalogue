@@ -14,9 +14,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -312,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
                 inReadingOrder = new ArrayList<Text.TextBlock>();
                 ArrayList<String> strInReadingOrder = new ArrayList<>();
-                
+
                 // on trie les textblocks en ordre de lecture
                 for (int x = 0; x < result.size(); x++) {
                     if (inReadingOrder.isEmpty()) {
@@ -402,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
+
                 //on cherche pour les attaques
                 //find matching textBlocks
                 String attackPower = "";
@@ -472,6 +478,28 @@ public class MainActivity extends AppCompatActivity {
                 newCarteModel.setWeight(strWeight);
                 newCarteModel.setNom(strNom);
 
+                //on fait un popup pour permettre a l'utilisateur d'editer les infos avant de créer la carte
+                LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+                View popupView = inflater.inflate(R.layout.edit_card_layout, null);
+
+                // create the popup window
+                int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+                int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                boolean focusable = true; // lets taps outside the popup also dismiss it
+                final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+                // show the popup window
+                // which view you pass in doesn't matter, it is only used for the window tolken
+                popupWindow.showAtLocation(txtScannedData, Gravity.CENTER, 0, 0);
+
+                // dismiss the popup window when touched
+               /* popupView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        popupWindow.dismiss();
+                        return true;
+                    }
+                });*/
             }
         });
 
