@@ -2,7 +2,10 @@ package uqac.dim.projetcartalogue;
 
 import android.media.Image;
 
-public class CarteModel {
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+public class carteModel {
     String numero;
     String nom;
     String type;
@@ -14,18 +17,21 @@ public class CarteModel {
     String pokemonType;
     String height;
     String weight;
+    public Hashtable<String,String> attacks;
 
     public CarteModel(int imageId, String numero, String nom, String type) {
         this.imageId = imageId;
         this.type = type;
         this.nom = nom;
         this.numero = numero;
+        attacks = new Hashtable<>();
     }
     public CarteModel(){
         imageId = Integer.parseInt(null);
         type = "";
         nom = "";
         numero = "";
+        attacks = new Hashtable<>();
     }
 
     public String getNumero() {
@@ -115,4 +121,5 @@ public class CarteModel {
     public void setWeight(String weight) {
         this.weight = weight;
     }
+
 }
