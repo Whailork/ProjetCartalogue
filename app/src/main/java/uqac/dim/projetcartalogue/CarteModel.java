@@ -1,11 +1,12 @@
 package uqac.dim.projetcartalogue;
 
+import android.graphics.Bitmap;
 import android.media.Image;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-public class carteModel {
+public class CarteModel {
     String numero;
     String nom;
     String type;
@@ -17,7 +18,9 @@ public class carteModel {
     String pokemonType;
     String height;
     String weight;
+    Bitmap imgBitmap;
     public Hashtable<String,String> attacks;
+    String description;
 
     public CarteModel(int imageId, String numero, String nom, String type) {
         this.imageId = imageId;
@@ -27,7 +30,7 @@ public class carteModel {
         attacks = new Hashtable<>();
     }
     public CarteModel(){
-        imageId = Integer.parseInt(null);
+        imageId = -1;
         type = "";
         nom = "";
         numero = "";
@@ -122,4 +125,19 @@ public class carteModel {
         this.weight = weight;
     }
 
+    public Bitmap getImgBitmap() {
+        return imgBitmap;
+    }
+
+    public void setImgBitmap(Bitmap imgBitmap) {
+        this.imgBitmap = imgBitmap;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

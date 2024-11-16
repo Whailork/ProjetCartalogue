@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/item_ouverture_fragment_1"
+        android:title="User"
+        android:icon="@drawable/pikachu" />
+    <item
+        android:id="@+id/item_ouverture_fragment_2"
+        android:title="Capture"
+        android:icon="@drawable/abra" />
+    <item
+        android:id="@+id/item_ouverture_fragment_3"
+        android:title="Collection"
+        android:icon="@drawable/abomasnow" />
+</menu>
