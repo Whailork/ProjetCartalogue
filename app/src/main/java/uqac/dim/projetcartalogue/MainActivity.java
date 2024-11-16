@@ -270,7 +270,10 @@ public class MainActivity extends AppCompatActivity {
         task.addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
-                boolean inFrench = false;
+                carteModel newCarteModel = new carteModel();
+
+                int middleLeft = 0;
+                int bottomLeft = 0;
                 boolean evolvesFrom = false;
                 txtScannedData.setText(task.getResult().getText());
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
@@ -309,7 +312,6 @@ public class MainActivity extends AppCompatActivity {
                     mBasicFR = basicFR.matcher(strInReadingOrder.get(i));
                     mBasicEN = basicEn.matcher(strInReadingOrder.get(i));
                     if(mBasicFR.find()){
-                        inFrench = true;
                         evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
                         String newString = strInReadingOrder.get(i).replace(evolutionText,"");
                         strInReadingOrder.remove(i);
@@ -330,7 +332,6 @@ public class MainActivity extends AppCompatActivity {
                             mBasicFR = stageFR.matcher(strInReadingOrder.get(i));
                             mBasicEN = stageEN.matcher(strInReadingOrder.get(i));
                             if(mBasicFR.find()){
-                                inFrench = true;
                                 evolvesFrom = true;
                                 evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
                                 String newString = strInReadingOrder.get(i).replace(evolutionText,"");
@@ -352,7 +353,6 @@ public class MainActivity extends AppCompatActivity {
                                     mBasicFR = megaFR.matcher(strInReadingOrder.get(i));
                                     mBasicEN = megaEN.matcher(strInReadingOrder.get(i));
                                     if(mBasicFR.find()){
-                                        inFrench = true;
                                         evolvesFrom = true;
                                         evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
                                         String newString = strInReadingOrder.get(i).replace(evolutionText,"");
@@ -476,6 +476,7 @@ public class MainActivity extends AppCompatActivity {
                 for(int i = 0; i < 5; i++){
                     mNO = numberFR.matcher(strInReadingOrder.get(i));
                     if(mNO.find()){
+                        middleLeft = inReadingOrder.get(i).getBoundingBox().left;
                         strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
                         String newString = strInReadingOrder.get(i).replace(strNO,"");
                         strInReadingOrder.remove(i);
@@ -485,6 +486,7 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         mNO = numberEN.matcher(strInReadingOrder.get(i));
                         if(mNO.find()){
+                            middleLeft = inReadingOrder.get(i).getBoundingBox().left;
                             strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
                             String newString = strInReadingOrder.get(i).replace(strNO,"");
                             strInReadingOrder.remove(i);
@@ -588,18 +590,26 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
-                //on fetch les attaques
-                
                 String strNom = strInReadingOrder.get(index);
                 strInReadingOrder.remove(index);
                 inReadingOrder.remove(index);
+
+                //on fetch les attaques
+                for(int i = 0; i < strInReadingOrder.size();i++){
+                    if(!strInReadingOrder.get(i).matches(".*\\d.*")){
+                        index = i;
+                        break;
+                    }
+                }
+
                 //BOTTOM------------------------------------------------------
                 //weakness
                 Matcher mWeakness;
                 String strWeakness;
-                for(int i = 0; i < 5; i++){
+                for(int i = 0; i < strInReadingOrder.size(); i++){
                     mWeakness = weaknessFR.matcher(strInReadingOrder.get(i));
                     if(mWeakness.find()){
+                        bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
                         strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
                         String newString = strInReadingOrder.get(i).replace(strWeakness,"");
                         strInReadingOrder.remove(i);
@@ -609,6 +619,7 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         mWeakness = weaknessEN.matcher(strInReadingOrder.get(i));
                         if(mWeakness.find()){
+                            bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
                             strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
                             String newString = strInReadingOrder.get(i).replace(strWeakness,"");
                             strInReadingOrder.remove(i);
@@ -618,12 +629,15 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
+                //on clean les textBlocks qui sont vides
+                strInReadingOrder = removeEmpty(strInReadingOrder);
                 //resistance
                 Matcher mResistance;
                 String strResistance;
-                for(int i = 0; i < 5; i++){
+                for(int i = 0; i < strInReadingOrder.size(); i++){
                     mResistance = resistanceFR.matcher(strInReadingOrder.get(i));
                     if(mResistance.find()){
+                        bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
                         strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
                         String newString = strInReadingOrder.get(i).replace(strResistance,"");
                         strInReadingOrder.remove(i);
@@ -633,6 +647,7 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         mResistance = resistanceEN.matcher(strInReadingOrder.get(i));
                         if(mResistance.find()){
+                            bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
                             strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
                             String newString = strInReadingOrder.get(i).replace(strResistance,"");
                             strInReadingOrder.remove(i);
@@ -642,12 +657,70 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
+                //on clean les textBlocks qui sont vides
+                strInReadingOrder = removeEmpty(strInReadingOrder);
                 //retreat
+
+
+                //find matching textBlocks
+                String attackPower = "";
+                String attackName = "";
+                String attackDescription = "";
+                ArrayList<Text.TextBlock> middleBlocks = new ArrayList<>();
+                ArrayList<String> attackStrings = new ArrayList<>();
+                for(int i = 0; i < inReadingOrder.size();i++){
+                    int boxLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    if(boxLeft > middleLeft + 50 && boxLeft < bottomLeft-50){
+                        middleBlocks.add(inReadingOrder.get(i));
+                    }
+                }
+                while(!middleBlocks.isEmpty()){
+                    attackStrings.clear();
+                    attackPower = "";
+                    attackName = "";
+                    attackDescription = "";
+                    ArrayList<Integer> indexes = new ArrayList<>();
+                    int left = middleBlocks.get(0).getBoundingBox().left;
+                    for(int i = 0; i < middleBlocks.size();i++){
+                        int boxLeft = middleBlocks.get(i).getBoundingBox().left;
+                        if(boxLeft < left + 100 && boxLeft > left - 100){
+                            strInReadingOrder.remove(i);
+                            strInReadingOrder.add(i,"");
+                            attackStrings.add(middleBlocks.get(i).getText());
+                            indexes.add(i);
+                        }
+                    }
+                    for (int i = indexes.size() -1; i>= 0;i--) {
+                        middleBlocks.remove((int)indexes.get(i));
+                    }
+                    indexes.clear();
+                    for(int i = 0; i < attackStrings.size();i++){
+                        if(attackStrings.get(i).matches(".*\\d.*") && attackStrings.get(i).length() < 4){
+                            attackPower = attackStrings.get(i);
+                        }
+
+                        if(attackStrings.get(i).length() > attackDescription.length()){
+                            attackName = attackDescription;
+                            attackDescription = attackStrings.get(i);
+                        }
+                    }
+                    //si l'attaque à du damage, mais qu'il n'y a que deux strings, ça veut dire qu'il n'y a pas de description
+                    //donc la description c'est le nom de l'attaque
+                    if(attackPower != "" && attackStrings.size() < 3){
+                        attackName = attackDescription;
+                        attackDescription = "";
+                    }
+                    newCarteModel.attacks.put(attackName,attackPower+"|"+attackDescription);
+
+                    //on clean les textBlocks qui sont vides
+                    strInReadingOrder = removeEmpty(strInReadingOrder);
+                }
+
 
 
                 strInReadingOrder.add("test");
                 inReadingOrder.size();
-                carteModel newCarteModel = new carteModel();
+
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
                 if(evolvesFrom){
