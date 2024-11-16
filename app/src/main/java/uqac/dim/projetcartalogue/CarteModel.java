@@ -9,7 +9,7 @@ public class carteModel {
     String numero;
     String nom;
     String type;
-    Image image ;
+    int imageId ;
     String stage;
     boolean alolan;
     String evolvesFrom;
@@ -19,15 +19,15 @@ public class carteModel {
     String weight;
     public Hashtable<String,String> attacks;
 
-    public carteModel(Image image, String numero, String nom, String type) {
-        this.image = image;
+    public CarteModel(int imageId, String numero, String nom, String type) {
+        this.imageId = imageId;
         this.type = type;
         this.nom = nom;
         this.numero = numero;
         attacks = new Hashtable<>();
     }
-    public carteModel(){
-        image = null;
+    public CarteModel(){
+        imageId = Integer.parseInt(null);
         type = "";
         nom = "";
         numero = "";
@@ -46,8 +46,8 @@ public class carteModel {
         return type;
     }
 
-    public Image getImage() {
-        return image;
+    public int getImage() {
+        return imageId;
     }
 
     public void setNumero(String numero) {
@@ -62,8 +62,8 @@ public class carteModel {
         this.type = type;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setImage(int image) {
+        this.imageId = image;
     }
 
     public String getStage() {
