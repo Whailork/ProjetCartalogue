@@ -5,7 +5,7 @@ import android.media.Image;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-public class carteModel {
+public class CarteModel {
     String numero;
     String nom;
     String type;
@@ -27,7 +27,7 @@ public class carteModel {
         attacks = new Hashtable<>();
     }
     public CarteModel(){
-        imageId = Integer.parseInt(null);
+        imageId = -1;
         type = "";
         nom = "";
         numero = "";

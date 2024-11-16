@@ -13,12 +13,14 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -28,9 +30,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
@@ -54,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGES_CODE = 110;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
+
 
     //ordre :
     /*
@@ -127,45 +133,24 @@ public class MainActivity extends AppCompatActivity {
 
     Pattern noSpecialChar = Pattern.compile("[^\\w\\s]", Pattern.CASE_INSENSITIVE);
 
+    //des variables spéciales pour le scan des cartes
+    boolean evolvesFrom = false;
+    int middleLeft = 0;
+    int bottomLeft = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Gestion des item dans le menu
-        NavigationView navigationView = findViewById(R.id.nav_view);
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                if (item.getItemId() == R.id.item1 ){
-                    Intent intent = new Intent(MainActivity.this, Cartalogue.class);
-                    startActivity(intent);
-                    Toast.makeText(MainActivity.this, "Item1 Clicker", Toast.LENGTH_SHORT).show();
-                } else if (item.getItemId() == R.id.item2) {
-                    Toast.makeText(MainActivity.this, "Item2 Clicker", Toast.LENGTH_SHORT).show();
-                }
-                else if (item.getItemId() == R.id.item3) {
-                    Toast.makeText(MainActivity.this, "iItem3 clicker", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
-
+        evolvesFrom = false;
+        middleLeft = 0;
+        bottomLeft = 0;
         //on get les views
-        btnCapture = findViewById(R.id.CaptureBtn);
         btnCamera = findViewById(R.id.CameraBtn);
-        btnCopy = findViewById(R.id.CopyTextBtn);
         txtScannedData = findViewById(R.id.scannedData);
         txtType = findViewById(R.id.typeTxt);
 
@@ -177,16 +162,10 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.READ_MEDIA_IMAGES") != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{"android.permission.READ_MEDIA_IMAGES"}, REQUEST_IMAGES_CODE);
         }
+        //pour la bottom navigation
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setOnNavigationItemSelectedListener(navListener);
 
-        // click pour stockage
-        btnCapture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent getPhoto = new Intent(MediaStore.ACTION_PICK_IMAGES);
-                //getPhoto.setType("image/*");
-                startActivityForResult(getPhoto, 1);
-            }
-        });
         //click pour camera
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,7 +181,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
 
+        Fragment selectedFragment = null;
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.item_ouverture_fragment_1){
+            Toast.makeText(MainActivity.this, "Open User", Toast.LENGTH_SHORT).show();
+        }
+
+        //get une photo from stockage
+        else if (itemId == R.id.item_ouverture_fragment_2)
+        {
+            Intent getPhoto = new Intent(MediaStore.ACTION_PICK_IMAGES);
+            startActivityForResult(getPhoto, 1);
+        }
+        else if (itemId == R.id.item_ouverture_fragment_3){
+            Intent intent = new Intent(MainActivity.this, Cartalogue.class);
+            startActivity(intent);
+            Toast.makeText(MainActivity.this, "Open Collection", Toast.LENGTH_SHORT).show();
+        }
+
+
+        if (selectedFragment != null)
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
+        return true;
+    };
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -298,16 +302,18 @@ public class MainActivity extends AppCompatActivity {
         task.addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
-                carteModel newCarteModel = new carteModel();
+                CarteModel newCarteModel = new CarteModel();
+                evolvesFrom = false;
+                middleLeft = 0;
+                bottomLeft = 0;
 
-                int middleLeft = 0;
-                int bottomLeft = 0;
-                boolean evolvesFrom = false;
                 txtScannedData.setText(task.getResult().getText());
+
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
                 inReadingOrder = new ArrayList<Text.TextBlock>();
                 ArrayList<String> strInReadingOrder = new ArrayList<>();
-
+                
+                // on trie les textblocks en ordre de lecture
                 for (int x = 0; x < result.size(); x++) {
                     if (inReadingOrder.isEmpty()) {
                         inReadingOrder.add(result.get(x));
@@ -329,267 +335,43 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //TOP--------------------------------------------------------------------------------
                 //check pour l'evolution(basic ou stage1/stage2) ou mega
-                String evolutionText = "";
-                Matcher mBasicFR;
-                Matcher mBasicEN;
-                for (int i = 0; i < 5; i++) {
-                    mBasicFR = basicFR.matcher(strInReadingOrder.get(i));
-                    mBasicEN = basicEn.matcher(strInReadingOrder.get(i));
-                    if(mBasicFR.find()){
-                        evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
-                        String newString = strInReadingOrder.get(i).replace(evolutionText,"");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-
-                    } else {
-                        if (mBasicEN.find()) {
-                            evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                            String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        } else {
-                            // c'est un pokemon deja evolue
-                            mBasicFR = stageFR.matcher(strInReadingOrder.get(i));
-                            mBasicEN = stageEN.matcher(strInReadingOrder.get(i));
-                            if(mBasicFR.find()){
-                                evolvesFrom = true;
-                                evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
-                                String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                strInReadingOrder.remove(i);
-                                strInReadingOrder.add(i, newString);
-                                break;
-                            } else {
-                                if (mBasicEN.find()) {
-                                    evolvesFrom = true;
-                                    evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                                    String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                    strInReadingOrder.remove(i);
-                                    strInReadingOrder.add(i, newString);
-                                    break;
-                                } else {
-                                    //c'est une mega evolution
-                                    mBasicFR = megaFR.matcher(strInReadingOrder.get(i));
-                                    mBasicEN = megaEN.matcher(strInReadingOrder.get(i));
-                                    if(mBasicFR.find()){
-                                        evolvesFrom = true;
-                                        evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
-                                        String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                        strInReadingOrder.remove(i);
-                                        strInReadingOrder.add(i, newString);
-                                        break;
-                                    } else {
-                                        if (mBasicEN.find()) {
-                                            evolvesFrom = true;
-                                            evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                                            String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                            strInReadingOrder.remove(i);
-                                            strInReadingOrder.add(i, newString);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-
-                }
-                //on clean les textblocks qui sont vides
+                String evolutionText = ScanForEvolution(strInReadingOrder);
+                //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
-
                 //ensuite on check si alolan
-                Matcher mAlolan;
-                boolean isAlolan = false;
-                for (int i = 0; i < 5; i++) {
-                    mAlolan = alolanFR.matcher(strInReadingOrder.get(i));
-                    if (mAlolan.find()) {
-                        isAlolan = true;
-                        String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
-                        String newString = strInReadingOrder.get(i).replace(toRemove, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mAlolan = alolanEN.matcher(strInReadingOrder.get(i));
-                        if (mAlolan.find()) {
-                            isAlolan = true;
-                            String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
-                            String newString = strInReadingOrder.get(i).replace(toRemove, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
-                // on clean les textblocks qui sont vides
+                boolean isAlolan = ScanForAlolan(strInReadingOrder);
+                //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 // si c'est pas une base on check evolves from
-                String strEvolvesFrom = "";
-                if (evolvesFrom) {
-                    Matcher mEvolvesFrom;
-                    for (int i = 0; i < 5; i++) {
+                String strEvolvesFrom = ScanForEvolvesFrom(strInReadingOrder);
+                // on clean les textBlocks qui sont vides
+                strInReadingOrder = removeEmpty(strInReadingOrder);
 
-                        mEvolvesFrom = evolvesFromFR.matcher(strInReadingOrder.get(i));
-                        if (mEvolvesFrom.find()) {
-                            strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
-                            String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        } else {
-                            mEvolvesFrom = evolvesFromEN.matcher(strInReadingOrder.get(i));
-                            if (mEvolvesFrom.find()) {
-                                strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
-                                String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
-                                strInReadingOrder.remove(i);
-                                strInReadingOrder.add(i, newString);
-                                break;
-                            }
-                        }
-
-                    }
-                    // on clean les textBlocks qui sont vides
-                    strInReadingOrder = removeEmpty(strInReadingOrder);
-                }
                 // on get les pv
-                Matcher mPv;
-                String strPv;
-                for (int i = 0; i < 5; i++) {
-
-                    mPv = pvFR.matcher(strInReadingOrder.get(i));
-                    if (mPv.find()) {
-                        strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
-                        String newString = strInReadingOrder.get(i).replace(strPv, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mPv = pvEN.matcher(strInReadingOrder.get(i));
-                        if (mPv.find()) {
-                            strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
-                            String newString = strInReadingOrder.get(i).replace(strPv, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-
-                }
+                String strPv = ScanForPV(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 //MIDDLE------------------------------------------------------------------------------------
                 // get le numero
-                Matcher mNO;
-                String strNO = "";
-                for (int i = 0; i < 5; i++) {
-                    mNO = numberFR.matcher(strInReadingOrder.get(i));
-                    if(mNO.find()){
-                        middleLeft = inReadingOrder.get(i).getBoundingBox().left;
-                        strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
-                        String newString = strInReadingOrder.get(i).replace(strNO,"");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mNO = numberEN.matcher(strInReadingOrder.get(i));
-                        if(mNO.find()){
-                            middleLeft = inReadingOrder.get(i).getBoundingBox().left;
-                            strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
-                            String newString = strInReadingOrder.get(i).replace(strNO,"");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
+                String strNO = ScanForNumber(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 // get le pokemon type
-
-                Matcher mPokeType;
-                String strPokeType = "";
-                for (int i = 0; i < 5; i++) {
-                    mPokeType = pokemonTypeFR.matcher(strInReadingOrder.get(i));
-                    if (mPokeType.find()) {
-                        strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
-                        String newString = strInReadingOrder.get(i).replace(strPokeType, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mPokeType = pokemonTypeEN.matcher(strInReadingOrder.get(i));
-                        if (mPokeType.find()) {
-                            strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
-                            String newString = strInReadingOrder.get(i).replace(strPokeType, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
+                String strPokeType = ScanForPokemonType(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 // get le height
-                Matcher mHeight;
-                String strHeight = "";
-                for (int i = 0; i < 5; i++) {
-                    mHeight = heightFR.matcher(strInReadingOrder.get(i));
-                    if (mHeight.find()) {
-                        strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
-                        String newString = strInReadingOrder.get(i).replace(strHeight, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mHeight = heightEN.matcher(strInReadingOrder.get(i));
-                        if (mHeight.find()) {
-                            strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
-                            String newString = strInReadingOrder.get(i).replace(strHeight, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
+                String strHeight = ScanFroHeight(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 // get le weigth
-
-                Matcher mWeight;
-                String strWeight = "";
-                for (int i = 0; i < 5; i++) {
-                    mWeight = weightFR.matcher(strInReadingOrder.get(i));
-                    if (mWeight.find()) {
-                        strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
-                        String newString = strInReadingOrder.get(i).replace(strWeight, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mWeight = weightEN.matcher(strInReadingOrder.get(i));
-                        if (mWeight.find()) {
-                            strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
-                            String newString = strInReadingOrder.get(i).replace(strWeight, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
+                String strWeight = ScanForWeight(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
@@ -605,72 +387,22 @@ public class MainActivity extends AppCompatActivity {
                 strInReadingOrder.remove(index);
                 inReadingOrder.remove(index);
 
-                //on fetch les attaques
-                for(int i = 0; i < strInReadingOrder.size();i++){
-                    if(!strInReadingOrder.get(i).matches(".*\\d.*")){
-                        index = i;
-                        break;
-                    }
-                }
-
                 //BOTTOM------------------------------------------------------
                 //weakness
-                Matcher mWeakness;
-                String strWeakness;
-                for(int i = 0; i < strInReadingOrder.size(); i++){
-                    mWeakness = weaknessFR.matcher(strInReadingOrder.get(i));
-                    if(mWeakness.find()){
-                        bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                        strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
-                        String newString = strInReadingOrder.get(i).replace(strWeakness,"");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mWeakness = weaknessEN.matcher(strInReadingOrder.get(i));
-                        if(mWeakness.find()){
-                            bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                            strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
-                            String newString = strInReadingOrder.get(i).replace(strWeakness,"");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
-
-                }
+                String strWeakness = ScanForWeakness(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
-                //resistance
-                Matcher mResistance;
-                String strResistance;
-                for(int i = 0; i < strInReadingOrder.size(); i++){
-                    mResistance = resistanceFR.matcher(strInReadingOrder.get(i));
-                    if(mResistance.find()){
-                        bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                        strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
-                        String newString = strInReadingOrder.get(i).replace(strResistance,"");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    } else {
-                        mResistance = resistanceEN.matcher(strInReadingOrder.get(i));
-                        if(mResistance.find()){
-                            bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                            strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
-                            String newString = strInReadingOrder.get(i).replace(strResistance,"");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
-                            break;
-                        }
-                    }
 
-                }
+                //resistance
+                String strResistance = ScanForResistance(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
                 //retreat
+                String strRetreat = ScanForRetreat(strInReadingOrder);
+                //on clean les textBlocks qui sont vides
+                strInReadingOrder = removeEmpty(strInReadingOrder);
 
-
+                //on cherche pour les attaques
                 //find matching textBlocks
                 String attackPower = "";
                 String attackName = "";
@@ -726,10 +458,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-
-                strInReadingOrder.add("test");
-                inReadingOrder.size();
-
+                //création de la carte à partir des infos récupérés
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
                 if (evolvesFrom) {
@@ -760,5 +489,324 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return newStrArray;
+    }
+
+    String ScanForEvolution(ArrayList<String> strInReadingOrder){
+        String evolutionText = "";
+        Matcher mBasicFR;
+        Matcher mBasicEN;
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+
+            mBasicFR = basicFR.matcher(strInReadingOrder.get(i));
+            mBasicEN = basicEn.matcher(strInReadingOrder.get(i));
+            if(mBasicFR.find()){
+                evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
+                String newString = strInReadingOrder.get(i).replace(evolutionText,"");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+
+            } else {
+                if (mBasicEN.find()) {
+                    evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
+                    String newString = strInReadingOrder.get(i).replace(evolutionText, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                } else {
+                    // c'est un pokemon deja evolue
+                    mBasicFR = stageFR.matcher(strInReadingOrder.get(i));
+                    mBasicEN = stageEN.matcher(strInReadingOrder.get(i));
+                    if(mBasicFR.find()){
+                        evolvesFrom = true;
+                        evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
+                        String newString = strInReadingOrder.get(i).replace(evolutionText, "");
+                        strInReadingOrder.remove(i);
+                        strInReadingOrder.add(i, newString);
+                        break;
+                    } else {
+                        if (mBasicEN.find()) {
+                            evolvesFrom = true;
+                            evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
+                            String newString = strInReadingOrder.get(i).replace(evolutionText, "");
+                            strInReadingOrder.remove(i);
+                            strInReadingOrder.add(i, newString);
+                            break;
+                        } else {
+                            //c'est une mega evolution
+                            mBasicFR = megaFR.matcher(strInReadingOrder.get(i));
+                            mBasicEN = megaEN.matcher(strInReadingOrder.get(i));
+                            if(mBasicFR.find()){
+                                evolvesFrom = true;
+                                evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
+                                String newString = strInReadingOrder.get(i).replace(evolutionText, "");
+                                strInReadingOrder.remove(i);
+                                strInReadingOrder.add(i, newString);
+                                break;
+                            } else {
+                                if (mBasicEN.find()) {
+                                    evolvesFrom = true;
+                                    evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
+                                    String newString = strInReadingOrder.get(i).replace(evolutionText, "");
+                                    strInReadingOrder.remove(i);
+                                    strInReadingOrder.add(i, newString);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        }
+        //on clean les textblocks qui sont vides
+        strInReadingOrder = removeEmpty(strInReadingOrder);
+        return evolutionText;
+    }
+    boolean ScanForAlolan(ArrayList<String> strInReadingOrder){
+        Matcher mAlolan;
+        boolean isAlolan = false;
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+
+            mAlolan = alolanFR.matcher(strInReadingOrder.get(i));
+            if (mAlolan.find()) {
+                isAlolan = true;
+                String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
+                String newString = strInReadingOrder.get(i).replace(toRemove, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mAlolan = alolanEN.matcher(strInReadingOrder.get(i));
+                if (mAlolan.find()) {
+                    isAlolan = true;
+                    String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
+                    String newString = strInReadingOrder.get(i).replace(toRemove, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        // on clean les textblocks qui sont vides
+        return isAlolan;
+    }
+    String ScanForEvolvesFrom(ArrayList<String> strInReadingOrder){
+        String strEvolvesFrom = "";
+        if (evolvesFrom) {
+            Matcher mEvolvesFrom;
+            for (int i = 0; i < strInReadingOrder.size(); i++) {
+
+                mEvolvesFrom = evolvesFromFR.matcher(strInReadingOrder.get(i));
+                if (mEvolvesFrom.find()) {
+                    strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
+                    String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                } else {
+                    mEvolvesFrom = evolvesFromEN.matcher(strInReadingOrder.get(i));
+                    if (mEvolvesFrom.find()) {
+                        strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
+                        String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
+                        strInReadingOrder.remove(i);
+                        strInReadingOrder.add(i, newString);
+                        break;
+                    }
+                }
+
+            }
+
+        }
+        return strEvolvesFrom;
+    }
+    String ScanForPV(ArrayList<String> strInReadingOrder){
+        Matcher mPv;
+        String strPv = "";
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+
+            mPv = pvFR.matcher(strInReadingOrder.get(i));
+            if (mPv.find()) {
+                strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
+                String newString = strInReadingOrder.get(i).replace(strPv, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mPv = pvEN.matcher(strInReadingOrder.get(i));
+                if (mPv.find()) {
+                    strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
+                    String newString = strInReadingOrder.get(i).replace(strPv, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+
+        }
+        return strPv;
+    }
+    String ScanForNumber(ArrayList<String> strInReadingOrder){
+        Matcher mNO;
+        String strNO = "";
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+            mNO = numberFR.matcher(strInReadingOrder.get(i));
+            if(mNO.find()){
+                middleLeft = inReadingOrder.get(i).getBoundingBox().left;
+                strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
+                String newString = strInReadingOrder.get(i).replace(strNO,"");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mNO = numberEN.matcher(strInReadingOrder.get(i));
+                if(mNO.find()){
+                    middleLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
+                    String newString = strInReadingOrder.get(i).replace(strNO,"");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strNO;
+    }
+    String ScanForPokemonType(ArrayList<String> strInReadingOrder){
+        Matcher mPokeType;
+        String strPokeType = "";
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+
+            mPokeType = pokemonTypeFR.matcher(strInReadingOrder.get(i));
+            if (mPokeType.find()) {
+                strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
+                String newString = strInReadingOrder.get(i).replace(strPokeType, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mPokeType = pokemonTypeEN.matcher(strInReadingOrder.get(i));
+                if (mPokeType.find()) {
+                    strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
+                    String newString = strInReadingOrder.get(i).replace(strPokeType, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strPokeType;
+    }
+    String ScanFroHeight(ArrayList<String> strInReadingOrder){
+        Matcher mHeight;
+        String strHeight = "";
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+            mHeight = heightFR.matcher(strInReadingOrder.get(i));
+            if (mHeight.find()) {
+                strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
+                String newString = strInReadingOrder.get(i).replace(strHeight, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mHeight = heightEN.matcher(strInReadingOrder.get(i));
+                if (mHeight.find()) {
+                    strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
+                    String newString = strInReadingOrder.get(i).replace(strHeight, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strHeight;
+    }
+    String ScanForWeight(ArrayList<String> strInReadingOrder){
+        Matcher mWeight;
+        String strWeight = "";
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
+            mWeight = weightFR.matcher(strInReadingOrder.get(i));
+            if (mWeight.find()) {
+                strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
+                String newString = strInReadingOrder.get(i).replace(strWeight, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mWeight = weightEN.matcher(strInReadingOrder.get(i));
+                if (mWeight.find()) {
+                    strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
+                    String newString = strInReadingOrder.get(i).replace(strWeight, "");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strWeight;
+    }
+    String ScanForWeakness(ArrayList<String> strInReadingOrder){
+        Matcher mWeakness;
+        String strWeakness = "";
+        for(int i = 0; i < strInReadingOrder.size(); i++){
+            mWeakness = weaknessFR.matcher(strInReadingOrder.get(i));
+            if(mWeakness.find()){
+                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
+                String newString = strInReadingOrder.get(i).replace(strWeakness,"");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mWeakness = weaknessEN.matcher(strInReadingOrder.get(i));
+                if(mWeakness.find()){
+                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
+                    String newString = strInReadingOrder.get(i).replace(strWeakness,"");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strWeakness;
+    }
+    String ScanForResistance(ArrayList<String> strInReadingOrder){
+        Matcher mResistance;
+        String strResistance = "";
+        for(int i = 0; i < strInReadingOrder.size(); i++){
+            mResistance = resistanceFR.matcher(strInReadingOrder.get(i));
+            if(mResistance.find()){
+                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
+                String newString = strInReadingOrder.get(i).replace(strResistance,"");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mResistance = resistanceEN.matcher(strInReadingOrder.get(i));
+                if(mResistance.find()){
+                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
+                    String newString = strInReadingOrder.get(i).replace(strResistance,"");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strResistance;
+    }
+    String ScanForRetreat(ArrayList<String> strInReadingOrder){
+        return "";
     }
 }
