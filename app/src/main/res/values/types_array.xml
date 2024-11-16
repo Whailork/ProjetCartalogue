@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="types_array">
+        <item>Psy</item>
+        <item>Dragon</item>
+        <item>Electric</item>
+        <item>Fire</item>
+        <item>Fighting</item>
+        <item>Plant</item>
+        <item>Water</item>
+        <item>Dark</item>
+        <item>Fairy</item>
+        <item>Steel</item>
+        <item>Normal</item>
+    </string-array>
+
+    <string-array name="stages_array">
+        <item>Basic</item>
+        <item>Stage1</item>
+        <item>Stage2</item>
+        <item>Mega</item>
+    </string-array>
+
+</resources>

@@ -9,7 +9,9 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,9 +21,15 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +56,7 @@ import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -256,51 +265,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ExtractText(Bitmap bitmap) {
-        int size = bitmap.getWidth() * bitmap.getHeight();
-        int[] pixelsMatchingToType = new int[PokemonTypeColors.values().length];
-        int[] allPixels = new int[size];
-        bitmap.getPixels(allPixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-        for (int i = 0; i < size; i += 300) {
-            Color color = Color.valueOf(allPixels[i]);
-            int index = 0;
-            for (PokemonTypeColors type : PokemonTypeColors.values()) {
-                Color typeColor = Color.valueOf(Color.rgb(type.getR(), type.getG(), type.getB()));
-                double contrast = ColorUtils.calculateContrast(allPixels[i], rgb(type.getR(), type.getG(), type.getB()));
-                float[] HCT1 = new float[3];
-                float[] HCT2 = new float[3];
-                //ColorUtils.colorToLAB(allPixels[i],lab1);
-                ColorUtils.colorToM3HCT(allPixels[i], HCT1);
-                ColorUtils.colorToM3HCT(Color.rgb(type.getR(), type.getG(), type.getB()), HCT2);
-                //ColorUtils.colorToLAB(Color.rgb(type.getR(),type.getG(),type.getB()),lab2);
-                double differenceHUE = Math.abs(HCT1[0] - HCT2[0]);
-                double differenceC = Math.abs(HCT1[1] - HCT2[1]);
-                double differenceT = Math.abs(HCT1[2] - HCT2[2]);
-                //int difference = Math.abs(rgb(type.getR(),type.getG(),type.getB()) - allPixels[i] );
-
-                if (differenceHUE < 5 && differenceT < 10 /*&& differenceC < 10*/) {
-                    //if((color.red() >typeColor.red() -colorMargin && color.red() < typeColor.red() +colorMargin) && (color.green() > typeColor.green() -colorMargin && color.green() < typeColor.green() +colorMargin) && (color.blue() > typeColor.blue() - colorMargin && color.blue() < typeColor.blue() + colorMargin)){
-                    pixelsMatchingToType[index]++;
-                    break;
-                }
-                index++;
-
-            }
-
-        }
-        int highestMatchNb = 0;
-        int highestMatchIndex = 0;
-
-        for (int x = 0; x < pixelsMatchingToType.length; x++) {
-            if (highestMatchNb < pixelsMatchingToType[x]) {
-                highestMatchNb = pixelsMatchingToType[x];
-                highestMatchIndex = x;
-            }
-        }
-
-        PokemonTypeColors matchingType = PokemonTypeColors.values()[highestMatchIndex];
-        txtType.setText(matchingType.name());
-        txtScannedData.setBackgroundColor(rgb(matchingType.getR(), matchingType.getG(), matchingType.getB()));
-
 
         TextRecognizer textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         Task<Text> task = textRecognizer.process(bitmap, 0);
@@ -312,6 +276,57 @@ public class MainActivity extends AppCompatActivity {
                 middleLeft = 0;
                 bottomLeft = 0;
 
+                //on scan la couleur
+                int size = bitmap.getWidth() * bitmap.getHeight();
+                int[] pixelsMatchingToType = new int[PokemonTypeColors.values().length];
+                int[] allPixels = new int[size];
+                bitmap.getPixels(allPixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+                for (int i = 0; i < size; i += 300) {
+                    Color color = Color.valueOf(allPixels[i]);
+                    int index = 0;
+                    for (PokemonTypeColors type : PokemonTypeColors.values()) {
+                        Color typeColor = Color.valueOf(Color.rgb(type.getR(), type.getG(), type.getB()));
+                        double contrast = ColorUtils.calculateContrast(allPixels[i], rgb(type.getR(), type.getG(), type.getB()));
+                        float[] HCT1 = new float[3];
+                        float[] HCT2 = new float[3];
+                        //ColorUtils.colorToLAB(allPixels[i],lab1);
+                        ColorUtils.colorToM3HCT(allPixels[i], HCT1);
+                        ColorUtils.colorToM3HCT(Color.rgb(type.getR(), type.getG(), type.getB()), HCT2);
+                        //ColorUtils.colorToLAB(Color.rgb(type.getR(),type.getG(),type.getB()),lab2);
+                        double differenceHUE = Math.abs(HCT1[0] - HCT2[0]);
+                        double differenceC = Math.abs(HCT1[1] - HCT2[1]);
+                        double differenceT = Math.abs(HCT1[2] - HCT2[2]);
+                        //int difference = Math.abs(rgb(type.getR(),type.getG(),type.getB()) - allPixels[i] );
+
+                        if (differenceHUE < 5 && differenceT < 10 /*&& differenceC < 10*/) {
+                            //if((color.red() >typeColor.red() -colorMargin && color.red() < typeColor.red() +colorMargin) && (color.green() > typeColor.green() -colorMargin && color.green() < typeColor.green() +colorMargin) && (color.blue() > typeColor.blue() - colorMargin && color.blue() < typeColor.blue() + colorMargin)){
+                            pixelsMatchingToType[index]++;
+                            break;
+                        }
+                        index++;
+
+                    }
+
+                }
+                int highestMatchNb = 0;
+                int highestMatchIndex = 0;
+
+                for (int x = 0; x < pixelsMatchingToType.length; x++) {
+                    if (highestMatchNb < pixelsMatchingToType[x]) {
+                        highestMatchNb = pixelsMatchingToType[x];
+                        highestMatchIndex = x;
+                    }
+                }
+
+                PokemonTypeColors matchingType = PokemonTypeColors.values()[highestMatchIndex];
+                txtType.setText(matchingType.name());
+                txtScannedData.setBackgroundColor(rgb(matchingType.getR(), matchingType.getG(), matchingType.getB()));
+
+
+                newCarteModel.type = matchingType.name();
+
+
+                //on scan les textblocks
                 txtScannedData.setText(task.getResult().getText());
 
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
@@ -478,28 +493,11 @@ public class MainActivity extends AppCompatActivity {
                 newCarteModel.setWeight(strWeight);
                 newCarteModel.setNom(strNom);
 
+                newCarteModel.setImgBitmap(rotateBitmap(imgBitmap,90));
                 //on fait un popup pour permettre a l'utilisateur d'editer les infos avant de créer la carte
-                LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-                View popupView = inflater.inflate(R.layout.edit_card_layout, null);
+                EditCarteModelPopup(newCarteModel);
 
-                // create the popup window
-                int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-                int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                boolean focusable = true; // lets taps outside the popup also dismiss it
-                final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
 
-                // show the popup window
-                // which view you pass in doesn't matter, it is only used for the window tolken
-                popupWindow.showAtLocation(txtScannedData, Gravity.CENTER, 0, 0);
-
-                // dismiss the popup window when touched
-               /* popupView.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        popupWindow.dismiss();
-                        return true;
-                    }
-                });*/
             }
         });
 
@@ -836,5 +834,86 @@ public class MainActivity extends AppCompatActivity {
     }
     String ScanForRetreat(ArrayList<String> strInReadingOrder){
         return "";
+    }
+
+    void EditCarteModelPopup(CarteModel modelToEdit){
+        LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.edit_card_layout, null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window tolken
+        popupWindow.showAtLocation(txtScannedData, Gravity.CENTER, 0, 0);
+
+        //on get les views pour editer et on leur set les bonnes valeurs
+        ImageView pokemonImg = popupView.findViewById(R.id.pokemonImg);
+        EditText numberEdit = popupView.findViewById(R.id.numberEdit);
+        EditText nameEdit = popupView.findViewById(R.id.nameEdit);
+        Spinner typeSpinner = popupView.findViewById(R.id.typeSpinner);
+        EditText pvEdit = popupView.findViewById(R.id.PvEdit);
+        CheckBox chkIsAlolan = popupView.findViewById(R.id.isAlolan);
+        Spinner stageSpinner = popupView.findViewById(R.id.stageSpinner);
+        EditText evolvesFromEdit = popupView.findViewById(R.id.evolvesFromEdit);
+        EditText heightEdit = popupView.findViewById(R.id.heightEdit);
+        EditText weightEdit = popupView.findViewById(R.id.weightEdit);
+        EditText descriptionEdit = popupView.findViewById(R.id.descriptionEdit);
+        Button saveBtn = popupView.findViewById(R.id.saveBtn);
+        Button cancelBtn = popupView.findViewById(R.id.cancelBtn);
+
+        pokemonImg.setImageBitmap(modelToEdit.getImgBitmap());
+        numberEdit.setText(modelToEdit.getNumero());
+        nameEdit.setText(modelToEdit.getNom());
+        //on set le selected item du spinner
+        typeSpinner.setSelection(PokemonTypeColors.valueOf(modelToEdit.type).ordinal());
+
+        pvEdit.setText(modelToEdit.getPv() + "");
+        chkIsAlolan.setChecked(modelToEdit.isAlolan());
+        //on set le selected item du spinner
+        List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
+        stageSpinner.setSelection(stages.indexOf(modelToEdit.getStage()));
+
+        evolvesFromEdit.setText(modelToEdit.getEvolvesFrom());
+        heightEdit.setText(modelToEdit.getHeight());
+        weightEdit.setText(modelToEdit.getWeight());
+        descriptionEdit.setText(modelToEdit.getDescription());
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //on fait la sauvegarde des données
+            }
+        });
+
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popupWindow.dismiss();
+
+            }
+        });
+        // dismiss the popup window when touched
+               /* popupView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        popupWindow.dismiss();
+                        return true;
+                    }
+                });*/
+    }
+    public Bitmap rotateBitmap(Bitmap original, float degrees) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(original, width, height, true);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+
+        return rotatedBitmap;
     }
 }
