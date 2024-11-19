@@ -6,21 +6,22 @@
     android:background="#62def8"
     android:orientation="horizontal">
 
-   <ImageView
-       android:id="@+id/pokemonImg"
-       android:layout_width="0dp"
-       android:layout_height="match_parent"
-       android:src="@drawable/abomasnow"
-       android:layout_weight="1"/>
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_weight="2">
+        android:layout_weight="3">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/pokemonImg"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/abomasnow"
+                android:layout_weight="1" />
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -91,12 +92,118 @@
                 android:layout_weight="1"
                 android:text="Weight"/>
         </LinearLayout>
-        <EditText
-            android:id="@+id/attacks"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/attack1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="The pokemons attacks"
-            android:singleLine="false"/>
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/attack1Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Attack Name"
+                android:singleLine="false"
+/>
+            <EditText
+                android:id="@+id/attack1Desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Attack Description"
+                android:singleLine="false"
+                android:layout_weight="3"/>
+            <EditText
+                android:id="@+id/attack1Power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="power"
+                android:singleLine="false"
+                android:inputType="number"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/attack2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/attack2Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Attack Name"
+                android:singleLine="false" />
+            <EditText
+                android:id="@+id/attack2Desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Attack Description"
+                android:singleLine="false"
+                android:layout_weight="3"/>
+            <EditText
+                android:id="@+id/attack2Power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="power"
+                android:singleLine="false"
+                android:inputType="number"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/attack3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/attack3Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Attack Name"
+                android:singleLine="false" />
+            <EditText
+                android:id="@+id/attack3Desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Attack Description"
+                android:singleLine="false"
+                android:layout_weight="3"/>
+            <EditText
+                android:id="@+id/attack3Power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="power"
+                android:singleLine="false"
+                android:inputType="number"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/attack4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/attack4Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Attack Name"
+                android:singleLine="false" />
+            <EditText
+                android:id="@+id/attack4Desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Attack Description"
+                android:singleLine="false"
+                android:layout_weight="3"/>
+            <EditText
+                android:id="@+id/attack4Power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="power"
+                android:singleLine="false"
+                android:inputType="number"/>
+
+        </LinearLayout>
+
         <EditText
             android:id="@+id/descriptionEdit"
             android:layout_width="wrap_content"

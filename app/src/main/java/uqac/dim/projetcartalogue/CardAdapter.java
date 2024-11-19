@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collections;
@@ -35,7 +36,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
         viewHolder.imageCarte.setImageResource(listCarte.get(position).imageId);
         viewHolder.numero.setText(listCarte.get(position).numero);
         viewHolder.nomCarte.setText(listCarte.get(position).nom);
-        viewHolder.typePokemon.setText(listCarte.get(position).type);;
+        viewHolder.typePokemon.setText(listCarte.get(position).type);
+        viewHolder.backgroundLayout.setBackgroundColor(ContextCompat.getColor(context,context.getResources().getIdentifier(viewHolder.typePokemon.getText().toString(), "color", context.getPackageName())));
+
     }
 
     @Override

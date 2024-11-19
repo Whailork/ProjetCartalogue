@@ -4,25 +4,19 @@ import static android.graphics.Color.argb;
 import static android.graphics.Color.rgb;
 import static android.graphics.Color.valueOf;
 
-import android.app.Notification;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -33,23 +27,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
@@ -57,6 +45,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -73,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGES_CODE = 110;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
+    ArrayList<CarteModel> Cartes = new ArrayList<>();
 
 
     //ordre :
@@ -128,11 +118,11 @@ public class MainActivity extends AppCompatActivity {
     Pattern pokemonTypeEN = Pattern.compile(".*pokémon", 2);
     Pattern pokemonTypeFR = Pattern.compile("pokémon.*", 2);
 
-    Pattern heightEN = Pattern.compile("HT : .*", 2);
-    Pattern heightFR = Pattern.compile("Taille : .* m$", 2);
+    Pattern heightEN = Pattern.compile("HT\\s*:?\\s*.*", 2);
+    Pattern heightFR = Pattern.compile("Taille\\s*:?\\s*.* m$", 2);
 
-    Pattern weightEN = Pattern.compile("WT : .*", 2);
-    Pattern weightFR = Pattern.compile("Poids : .* kg$");
+    Pattern weightEN = Pattern.compile("WT\\s*:?\\s*.*", 2);
+    Pattern weightFR = Pattern.compile("Poids\\s*:?\\s*.* kg$");
 
     //BOTTOM
     Pattern weaknessEN = Pattern.compile("weakness", 2);
@@ -212,7 +202,14 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (itemId == R.id.item_ouverture_fragment_3){
             Intent intent = new Intent(MainActivity.this, Cartalogue.class);
-            startActivity(intent);
+            intent.putExtra("carteList",Cartes);
+            try{
+                startActivity(intent);
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
+
             Toast.makeText(MainActivity.this, "Open Collection", Toast.LENGTH_SHORT).show();
         }
 
@@ -478,7 +475,6 @@ public class MainActivity extends AppCompatActivity {
                     strInReadingOrder = removeEmpty(strInReadingOrder);
                 }
 
-
                 //création de la carte à partir des infos récupérés
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
@@ -493,6 +489,7 @@ public class MainActivity extends AppCompatActivity {
                 newCarteModel.setWeight(strWeight);
                 newCarteModel.setNom(strNom);
 
+                //on fait tourner le bitmap pour que l'image soit dans le bon sens
                 newCarteModel.setImgBitmap(rotateBitmap(imgBitmap,90));
                 //on fait un popup pour permettre a l'utilisateur d'editer les infos avant de créer la carte
                 EditCarteModelPopup(newCarteModel);
@@ -501,7 +498,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //FrameLayout frame  = new FrameLayout(this);
     }
 
     ArrayList<String> removeEmpty(ArrayList<String> inArray) {
@@ -861,10 +857,37 @@ public class MainActivity extends AppCompatActivity {
         EditText evolvesFromEdit = popupView.findViewById(R.id.evolvesFromEdit);
         EditText heightEdit = popupView.findViewById(R.id.heightEdit);
         EditText weightEdit = popupView.findViewById(R.id.weightEdit);
+
+        //Attaque 1 :
+        LinearLayout attack1 = popupView.findViewById(R.id.attack1);
+        EditText attack1Name = popupView.findViewById(R.id.attack1Name);
+        EditText attack1Desc = popupView.findViewById(R.id.attack1Desc);
+        EditText attack1Power = popupView.findViewById(R.id.attack1Power);
+
+        //Attaque 2 :
+        LinearLayout attack2 = popupView.findViewById(R.id.attack2);
+        EditText attack2Name = popupView.findViewById(R.id.attack2Name);
+        EditText attack2Desc = popupView.findViewById(R.id.attack2Desc);
+        EditText attack2Power = popupView.findViewById(R.id.attack2Power);
+
+        //Attaque 3 :
+        LinearLayout attack3 = popupView.findViewById(R.id.attack3);
+        EditText attack3Name = popupView.findViewById(R.id.attack3Name);
+        EditText attack3Desc = popupView.findViewById(R.id.attack3Desc);
+        EditText attack3Power = popupView.findViewById(R.id.attack3Power);
+
+        //Attaque 4 :
+        LinearLayout attack4 = popupView.findViewById(R.id.attack4);
+        EditText attack4Name = popupView.findViewById(R.id.attack4Name);
+        EditText attack4Desc = popupView.findViewById(R.id.attack4Desc);
+        EditText attack4Power = popupView.findViewById(R.id.attack4Power);
+
         EditText descriptionEdit = popupView.findViewById(R.id.descriptionEdit);
         Button saveBtn = popupView.findViewById(R.id.saveBtn);
         Button cancelBtn = popupView.findViewById(R.id.cancelBtn);
 
+
+        // on set les valeurs des views
         pokemonImg.setImageBitmap(modelToEdit.getImgBitmap());
         numberEdit.setText(modelToEdit.getNumero());
         nameEdit.setText(modelToEdit.getNom());
@@ -880,12 +903,339 @@ public class MainActivity extends AppCompatActivity {
         evolvesFromEdit.setText(modelToEdit.getEvolvesFrom());
         heightEdit.setText(modelToEdit.getHeight());
         weightEdit.setText(modelToEdit.getWeight());
+
+        int nbAttacks = modelToEdit.attacks.size();
+        // on disable des éléments du layout selon le nombre d'attaques
+        if(nbAttacks == 0){
+            attack1.setVisibility(View.GONE);
+            attack2.setVisibility(View.GONE);
+            attack3.setVisibility(View.GONE);
+            attack4.setVisibility(View.GONE);
+        }
+        else{
+            if(nbAttacks == 1){
+//on process l'attaque 1
+                Enumeration<String> keys = modelToEdit.attacks.keys();
+                String key1 = keys.nextElement();
+                String str = modelToEdit.attacks.get(key1);
+                String[] split = str.split("\\|");
+                attack1Name.setText(key1);
+                if(split[0].isEmpty()){
+                    attack1Power.setText("0");
+                    attack1Power.setVisibility(View.GONE);
+                }
+                else{
+                    attack1Power.setText(split[0]);
+                }
+                if(split.length < 2){
+                    attack1Desc.setText("");
+                    attack1Desc.setVisibility(View.GONE);
+                }
+                else{
+                    if(split[1].isEmpty()){
+                        attack1Desc.setText("");
+                        attack1Desc.setVisibility(View.GONE);
+                    }
+                    else{
+                        attack1Desc.setText(split[1]);
+                    }
+                }
+                attack2.setVisibility(View.GONE);
+                attack3.setVisibility(View.GONE);
+                attack4.setVisibility(View.GONE);
+            }
+            else{
+                if(nbAttacks == 2){
+                    //on process l'attaque 1
+                    Enumeration<String> keys = modelToEdit.attacks.keys();
+                    String key = keys.nextElement();
+                    String str = modelToEdit.attacks.get(key);
+                    String[] split = str.split("\\|");
+                    attack1Name.setText(key);
+                    if(split[0].isEmpty()){
+                        attack1Power.setText("0");
+                        attack1Power.setVisibility(View.GONE);
+                    }
+                    else{
+                        attack1Power.setText(split[0]);
+                    }
+                    if(split.length < 2){
+                        attack1Desc.setText("");
+                        attack1Desc.setVisibility(View.GONE);
+                    }
+                    else{
+                        if(split[1].isEmpty()){
+                            attack1Desc.setText("");
+                            attack1Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack1Desc.setText(split[1]);
+                        }
+                    }
+
+
+                    //on process l'attaque 2
+                    key = keys.nextElement();
+                    str = modelToEdit.attacks.get(key);
+                    split = str.split("\\|");
+
+                    attack2Name.setText(key);
+                    if(split[0].isEmpty()){
+                        attack2Power.setText("0");
+                        attack2Power.setVisibility(View.GONE);
+                    }
+                    else{
+                        attack2Power.setText(split[0]);
+                    }
+                    if(split.length < 2){
+                        attack2Desc.setText("");
+                        attack2Desc.setVisibility(View.GONE);
+                    }
+                    else{
+                        if(split[1].isEmpty()){
+                            attack2Desc.setText("");
+                            attack2Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack2Desc.setText(split[1]);
+                        }
+                    }
+
+                    attack3.setVisibility(View.GONE);
+                    attack4.setVisibility(View.GONE);
+                }
+                else{
+                    if(nbAttacks == 3){
+                        //on process l'attaque 1
+                        Enumeration<String> keys = modelToEdit.attacks.keys();
+                        String key = keys.nextElement();
+                        String str = modelToEdit.attacks.get(key);
+                        String[] split = str.split("\\|");
+                        attack1Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack1Power.setText("0");
+                            attack1Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack1Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack1Desc.setText("");
+                            attack1Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack1Desc.setText("");
+                                attack1Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Desc.setText(split[1]);
+                            }
+                        }
+
+
+                        //on process l'attaque 2
+                        key = keys.nextElement();
+                        str = modelToEdit.attacks.get(key);
+                        split = str.split("\\|");
+
+                        attack2Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack2Power.setText("0");
+                            attack2Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack2Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack2Desc.setText("");
+                            attack2Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack2Desc.setText("");
+                                attack2Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack2Desc.setText(split[1]);
+                            }
+                        }
+
+                        //on process l'attaque 3
+                        key = keys.nextElement();
+                        str = modelToEdit.attacks.get(key);
+                        split = str.split("\\|");
+
+                        attack3Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack3Power.setText("0");
+                            attack3Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack3Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack3Desc.setText("");
+                            attack3Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack3Desc.setText("");
+                                attack3Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack3Desc.setText(split[1]);
+                            }
+                        }
+                        attack4.setVisibility(View.GONE);
+                    }
+                    else{
+                        //on process l'attaque 1
+                        Enumeration<String> keys = modelToEdit.attacks.keys();
+                        String key = keys.nextElement();
+                        String str = modelToEdit.attacks.get(key);
+                        String[] split = str.split("\\|");
+                        attack1Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack1Power.setText("0");
+                            attack1Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack1Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack1Desc.setText("");
+                            attack1Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack1Desc.setText("");
+                                attack1Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Desc.setText(split[1]);
+                            }
+                        }
+
+
+                        //on process l'attaque 2
+                        key = keys.nextElement();
+                        str = modelToEdit.attacks.get(key);
+                        split = str.split("\\|");
+
+                        attack2Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack2Power.setText("0");
+                            attack2Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack2Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack2Desc.setText("");
+                            attack2Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack2Desc.setText("");
+                                attack2Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack2Desc.setText(split[1]);
+                            }
+                        }
+
+                        //on process l'attaque 3
+                        key = keys.nextElement();
+                        str = modelToEdit.attacks.get(key);
+                        split = str.split("\\|");
+
+                        attack3Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack3Power.setText("0");
+                            attack3Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack3Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack3Desc.setText("");
+                            attack3Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack3Desc.setText("");
+                                attack3Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack3Desc.setText(split[1]);
+                            }
+                        }
+                        //on process l'attaque 4
+                        key = keys.nextElement();
+                        str = modelToEdit.attacks.get(key);
+                        split = str.split("\\|");
+
+                        attack4Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack4Power.setText("0");
+                            attack4Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack4Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack4Desc.setText("");
+                            attack4Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack4Desc.setText("");
+                                attack4Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack4Desc.setText(split[1]);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
         descriptionEdit.setText(modelToEdit.getDescription());
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //on fait la sauvegarde des données
+                modelToEdit.setNumero(numberEdit.getText().toString());
+                modelToEdit.setNom(nameEdit.getText().toString());
+                modelToEdit.setType(typeSpinner.getSelectedItem().toString());
+                modelToEdit.setPv(Integer.parseInt(pvEdit.getText().toString()));
+                modelToEdit.setAlolan(chkIsAlolan.isActivated());
+                modelToEdit.setStage(stageSpinner.getSelectedItem().toString());
+                modelToEdit.setEvolvesFrom(evolvesFromEdit.getText().toString());
+                modelToEdit.setHeight(heightEdit.getText().toString());
+                modelToEdit.setWeight(weightEdit.getText().toString());
+                modelToEdit.setDescription(descriptionEdit.getText().toString());
+
+                //on load les attaques
+                if(attack1.getVisibility() != View.GONE){
+                    modelToEdit.attacks.put(attack1Name.getText().toString(),attack1Power.getText().toString()+"|"+attack1Desc.getText().toString());
+                }
+                if(attack2.getVisibility() != View.GONE){
+                    modelToEdit.attacks.put(attack2Name.getText().toString(),attack2Power.getText().toString()+"|"+attack2Desc.getText().toString());
+                }
+                if(attack3.getVisibility() != View.GONE){
+                    modelToEdit.attacks.put(attack3Name.getText().toString(),attack3Power.getText().toString()+"|"+attack3Desc.getText().toString());
+                }
+                if(attack4.getVisibility() != View.GONE){
+                    modelToEdit.attacks.put(attack4Name.getText().toString(),attack4Power.getText().toString()+"|"+attack4Desc.getText().toString());
+                }
+
+
+                Cartes.add(modelToEdit);
+                popupWindow.dismiss();
             }
         });
 
