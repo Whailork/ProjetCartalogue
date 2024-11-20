@@ -214,14 +214,14 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (itemId == R.id.item_ouverture_fragment_3){
 
-            CarteModel carteModel1 = new CarteModel(1,R.drawable.pikachu,"1","Pikachu","Electric");
+            /*CarteModel carteModel1 = new CarteModel(1,R.drawable.pikachu,"1","Pikachu","Electric");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     cbd.carteDao().delete(carteModel1);
                     cbd.carteDao().addCarte(carteModel1);
                 }
-            }).start();
+            }).start();*/
 
             Intent intent = new Intent(MainActivity.this, Cartalogue.class);
             try{
@@ -1239,7 +1239,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //on fait la sauvegarde des données
-                modelToEdit.setId(carteModel.hashCode());
+                //modelToEdit.setId(carteModel.hashCode());
                 modelToEdit.setNumero(numberEdit.getText().toString());
                 modelToEdit.setNom(nameEdit.getText().toString());
                 modelToEdit.setType(typeSpinner.getSelectedItem().toString());
