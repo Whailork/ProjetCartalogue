@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 public class CarteModel implements Parcelable {
@@ -69,7 +70,7 @@ public class CarteModel implements Parcelable {
         attacks = new Hashtable<>();
     }
     public CarteModel(){
-        id = -1;
+        id = UUID.randomUUID().hashCode();
         imageId = -1;
         type = "";
         nom = "";
@@ -249,8 +250,4 @@ public class CarteModel implements Parcelable {
         return id == that.id && imageId == that.imageId && alolan == that.alolan && pv == that.pv && Objects.equals(numero, that.numero) && Objects.equals(nom, that.nom) && Objects.equals(type, that.type) && Objects.equals(stage, that.stage) && Objects.equals(evolvesFrom, that.evolvesFrom) && Objects.equals(pokemonType, that.pokemonType) && Objects.equals(height, that.height) && Objects.equals(weight, that.weight) && Objects.equals(imgBitmap, that.imgBitmap) && Objects.equals(attacks, that.attacks) && Objects.equals(description, that.description);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, numero, nom, type, imageId, stage, alolan, evolvesFrom, pv, pokemonType, height, weight, imgBitmap, attacks, description);
-    }
 }
