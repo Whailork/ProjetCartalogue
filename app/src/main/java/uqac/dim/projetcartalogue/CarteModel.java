@@ -6,28 +6,62 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Objects;
 
+@Entity
 public class CarteModel implements Parcelable {
+    @PrimaryKey
+    int id;
+    @ColumnInfo (name = "numero")
     String numero;
+
+    @ColumnInfo (name = "nom")
     String nom;
+
+    @ColumnInfo (name = "type")
     String type;
+
+    @ColumnInfo (name = "imageId")
     int imageId ;
+
+    @ColumnInfo (name = "stage")
     String stage;
+
+    @ColumnInfo (name = "alolan")
     boolean alolan;
+
+    @ColumnInfo (name = "evolvesFrom")
     String evolvesFrom;
+
+    @ColumnInfo (name = "pv")
     int pv;
+
+    @ColumnInfo (name = "pokemonType")
     String pokemonType;
+
+    @ColumnInfo (name = "height")
     String height;
+
+    @ColumnInfo (name = "weight")
     String weight;
+
+    @ColumnInfo (name = "imgBitMap")
     Bitmap imgBitmap;
+
+    @ColumnInfo (name = "attacks")
     public Hashtable<String,String> attacks;
+
+    @ColumnInfo (name = "description")
     String description;
 
-    public CarteModel(int imageId, String numero, String nom, String type) {
+    public CarteModel(int id,int imageId, String numero, String nom, String type) {
         this.imageId = imageId;
         this.type = type;
         this.nom = nom;
@@ -35,6 +69,7 @@ public class CarteModel implements Parcelable {
         attacks = new Hashtable<>();
     }
     public CarteModel(){
+        id = -1;
         imageId = -1;
         type = "";
         nom = "";
@@ -43,6 +78,7 @@ public class CarteModel implements Parcelable {
     }
 
     protected CarteModel(Parcel in) {
+        id = in.readInt();
         numero = in.readString();
         nom = in.readString();
         type = in.readString();
@@ -181,6 +217,7 @@ public class CarteModel implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeInt(id);
         parcel.writeString(numero);
         parcel.writeString(nom);
         parcel.writeString(type);
@@ -194,5 +231,26 @@ public class CarteModel implements Parcelable {
         parcel.writeString(weight);
         //parcel.writeValue(imgBitmap);
         parcel.writeString(description);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CarteModel that = (CarteModel) o;
+        return id == that.id && imageId == that.imageId && alolan == that.alolan && pv == that.pv && Objects.equals(numero, that.numero) && Objects.equals(nom, that.nom) && Objects.equals(type, that.type) && Objects.equals(stage, that.stage) && Objects.equals(evolvesFrom, that.evolvesFrom) && Objects.equals(pokemonType, that.pokemonType) && Objects.equals(height, that.height) && Objects.equals(weight, that.weight) && Objects.equals(imgBitmap, that.imgBitmap) && Objects.equals(attacks, that.attacks) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numero, nom, type, imageId, stage, alolan, evolvesFrom, pv, pokemonType, height, weight, imgBitmap, attacks, description);
     }
 }

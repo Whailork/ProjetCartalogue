@@ -4,6 +4,7 @@ import static android.graphics.Color.argb;
 import static android.graphics.Color.rgb;
 import static android.graphics.Color.valueOf;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -34,6 +35,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -62,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGES_CODE = 110;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
-    ArrayList<CarteModel> Cartes = new ArrayList<>();
+    List<CarteModel> carteList;
+
 
 
     //ordre :
@@ -141,10 +144,20 @@ public class MainActivity extends AppCompatActivity {
     boolean evolvesFrom = false;
     int middleLeft = 0;
     int bottomLeft = 0;
+
+    private CarteBD cbd;
+    private CarteModel carteModel;
+    private CarteDao carteDao;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Context context = getApplicationContext();
+        cbd = CarteBD.getDataBase(context);
+        CarteDao carteDao = cbd.carteDao();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -201,8 +214,17 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(getPhoto, 1);
         }
         else if (itemId == R.id.item_ouverture_fragment_3){
+
+            CarteModel carteModel1 = new CarteModel(1,R.drawable.pikachu,"1","Pikachu","Electric");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    cbd.carteDao().delete(carteModel1);
+                    cbd.carteDao().addCarte(carteModel1);
+                }
+            }).start();
+
             Intent intent = new Intent(MainActivity.this, Cartalogue.class);
-            intent.putExtra("carteList",Cartes);
             try{
                 startActivity(intent);
             }
@@ -1208,6 +1230,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //on fait la sauvegarde des données
+                modelToEdit.setId(carteModel.hashCode());
                 modelToEdit.setNumero(numberEdit.getText().toString());
                 modelToEdit.setNom(nameEdit.getText().toString());
                 modelToEdit.setType(typeSpinner.getSelectedItem().toString());
@@ -1233,8 +1256,13 @@ public class MainActivity extends AppCompatActivity {
                     modelToEdit.attacks.put(attack4Name.getText().toString(),attack4Power.getText().toString()+"|"+attack4Desc.getText().toString());
                 }
 
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        cbd.carteDao().addCarte(modelToEdit);
+                    }
+                }).start();
 
-                Cartes.add(modelToEdit);
                 popupWindow.dismiss();
             }
         });
