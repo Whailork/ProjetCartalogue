@@ -17,7 +17,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -96,14 +95,14 @@ public class MainActivity extends AppCompatActivity {
     * rarity*/
 
     //TOP
-    Pattern basicEn = Pattern.compile("Basic", Pattern.CASE_INSENSITIVE);
-    Pattern basicFR = Pattern.compile("Base", Pattern.CASE_INSENSITIVE);
+    Pattern basicEn = Pattern.compile("Basic", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
+    Pattern basicFR = Pattern.compile("Base", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
 
-    Pattern stageEN = Pattern.compile("Stage", Pattern.CASE_INSENSITIVE);
-    Pattern stageFR = Pattern.compile("niveau", Pattern.CASE_INSENSITIVE);
+    Pattern stageEN = Pattern.compile("Stage\\s?[12]", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
+    Pattern stageFR = Pattern.compile("niveau\\s?[12]", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
 
-    Pattern megaEN = Pattern.compile("mega", 2);
-    Pattern megaFR = Pattern.compile("méga", 2);
+    Pattern megaEN = Pattern.compile("mega", 2); //testé et fonctionnel
+    Pattern megaFR = Pattern.compile("méga", 2); //testé et fonctionnel
 
     Pattern alolanEN = Pattern.compile("Alolan", Pattern.CASE_INSENSITIVE);
     Pattern alolanFR = Pattern.compile("d'alola", 2);
@@ -122,10 +121,10 @@ public class MainActivity extends AppCompatActivity {
     Pattern pokemonTypeFR = Pattern.compile("pokémon.*", 2);
 
     Pattern heightEN = Pattern.compile("HT\\s*:?\\s*.*", 2);
-    Pattern heightFR = Pattern.compile("Taille\\s*:?\\s*.* m$", 2);
+    Pattern heightFR = Pattern.compile("Taille\\s?:?\\s?(\\d+[\\.,]\\d+)\\s?m?", 2); // testé et fonctionnel
 
     Pattern weightEN = Pattern.compile("WT\\s*:?\\s*.*", 2);
-    Pattern weightFR = Pattern.compile("Poids\\s*:?\\s*.* kg$");
+    Pattern weightFR = Pattern.compile("Poids\\s?:?\\s?(\\d+[\\.,]\\d+)\\s?k?g?"); // testé et fonctionnel
 
     //BOTTOM
     Pattern weaknessEN = Pattern.compile("weakness", 2);
@@ -399,18 +398,18 @@ public class MainActivity extends AppCompatActivity {
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
-                // get le pokemon type
-                String strPokeType = ScanForPokemonType(strInReadingOrder);
-                //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
-
                 // get le height
-                String strHeight = ScanFroHeight(strInReadingOrder);
+                String strHeight = ScanForHeight(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
                 // get le weigth
                 String strWeight = ScanForWeight(strInReadingOrder);
+                //on clean les textBlocks qui sont vides
+                strInReadingOrder = removeEmpty(strInReadingOrder);
+
+                // get le pokemon type
+                String strPokeType = ScanForPokemonType(strInReadingOrder);
                 //on clean les textBlocks qui sont vides
                 strInReadingOrder = removeEmpty(strInReadingOrder);
 
@@ -496,6 +495,7 @@ public class MainActivity extends AppCompatActivity {
                     //on clean les textBlocks qui sont vides
                     strInReadingOrder = removeEmpty(strInReadingOrder);
                 }
+                // il va falloir fetch la description
 
                 //création de la carte à partir des infos récupérés
                 newCarteModel.setAlolan(isAlolan);
@@ -524,10 +524,10 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> removeEmpty(ArrayList<String> inArray) {
         ArrayList<String> newStrArray = new ArrayList<>();
-        for (int i = 0; i < inArray.size(); i++) {
+        for (int i = inArray.size() -1; i >= 0; i--) {
             String trimmedText = inArray.get(i).trim();
             if (!trimmedText.isEmpty()) {
-                newStrArray.add(inArray.get(i));
+                newStrArray.add(0,inArray.get(i));
             } else {
                 inReadingOrder.remove(i);
             }
@@ -746,7 +746,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return strPokeType;
     }
-    String ScanFroHeight(ArrayList<String> strInReadingOrder){
+    String ScanForHeight(ArrayList<String> strInReadingOrder){
         Matcher mHeight;
         String strHeight = "";
         for (int i = 0; i < strInReadingOrder.size(); i++) {
@@ -920,7 +920,16 @@ public class MainActivity extends AppCompatActivity {
         chkIsAlolan.setChecked(modelToEdit.isAlolan());
         //on set le selected item du spinner
         List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
-        stageSpinner.setSelection(stages.indexOf(modelToEdit.getStage()));
+        if(modelToEdit.getStage().matches("(?i)base") || modelToEdit.getStage().matches("(?i)basic")  ){
+            modelToEdit.setStage(stages.get(0));
+        }
+        if(modelToEdit.getStage().matches("(?i)niveau\\s?1") || modelToEdit.getStage().matches("(?i)stage\\s?1")){
+            modelToEdit.setStage(stages.get(1));
+        }
+        if(modelToEdit.getStage().matches("niveau\\s?2") || modelToEdit.getStage().matches("(?i)stage\\s?2")){
+            modelToEdit.setStage(stages.get(2));
+        }
+        stageSpinner.setSelection(stages.indexOf(modelToEdit.getStage().toLowerCase()));
 
         evolvesFromEdit.setText(modelToEdit.getEvolvesFrom());
         heightEdit.setText(modelToEdit.getHeight());
@@ -929,14 +938,14 @@ public class MainActivity extends AppCompatActivity {
         int nbAttacks = modelToEdit.attacks.size();
         // on disable des éléments du layout selon le nombre d'attaques
         if(nbAttacks == 0){
-            attack1.setVisibility(View.GONE);
+            /*attack1.setVisibility(View.GONE);
             attack2.setVisibility(View.GONE);
             attack3.setVisibility(View.GONE);
-            attack4.setVisibility(View.GONE);
+            attack4.setVisibility(View.GONE);*/
         }
         else{
             if(nbAttacks == 1){
-//on process l'attaque 1
+                //on process l'attaque 1
                 Enumeration<String> keys = modelToEdit.attacks.keys();
                 String key1 = keys.nextElement();
                 String str = modelToEdit.attacks.get(key1);
@@ -944,27 +953,27 @@ public class MainActivity extends AppCompatActivity {
                 attack1Name.setText(key1);
                 if(split[0].isEmpty()){
                     attack1Power.setText("0");
-                    attack1Power.setVisibility(View.GONE);
+                    //attack1Power.setVisibility(View.GONE);
                 }
                 else{
                     attack1Power.setText(split[0]);
                 }
                 if(split.length < 2){
                     attack1Desc.setText("");
-                    attack1Desc.setVisibility(View.GONE);
+                    //attack1Desc.setVisibility(View.GONE);
                 }
                 else{
                     if(split[1].isEmpty()){
                         attack1Desc.setText("");
-                        attack1Desc.setVisibility(View.GONE);
+                        //attack1Desc.setVisibility(View.GONE);
                     }
                     else{
                         attack1Desc.setText(split[1]);
                     }
                 }
-                attack2.setVisibility(View.GONE);
+                /*attack2.setVisibility(View.GONE);
                 attack3.setVisibility(View.GONE);
-                attack4.setVisibility(View.GONE);
+                attack4.setVisibility(View.GONE);*/
             }
             else{
                 if(nbAttacks == 2){
@@ -976,19 +985,19 @@ public class MainActivity extends AppCompatActivity {
                     attack1Name.setText(key);
                     if(split[0].isEmpty()){
                         attack1Power.setText("0");
-                        attack1Power.setVisibility(View.GONE);
+                        //attack1Power.setVisibility(View.GONE);
                     }
                     else{
                         attack1Power.setText(split[0]);
                     }
                     if(split.length < 2){
                         attack1Desc.setText("");
-                        attack1Desc.setVisibility(View.GONE);
+                        //attack1Desc.setVisibility(View.GONE);
                     }
                     else{
                         if(split[1].isEmpty()){
                             attack1Desc.setText("");
-                            attack1Desc.setVisibility(View.GONE);
+                            //attack1Desc.setVisibility(View.GONE);
                         }
                         else{
                             attack1Desc.setText(split[1]);
@@ -1004,27 +1013,27 @@ public class MainActivity extends AppCompatActivity {
                     attack2Name.setText(key);
                     if(split[0].isEmpty()){
                         attack2Power.setText("0");
-                        attack2Power.setVisibility(View.GONE);
+                        //attack2Power.setVisibility(View.GONE);
                     }
                     else{
                         attack2Power.setText(split[0]);
                     }
                     if(split.length < 2){
                         attack2Desc.setText("");
-                        attack2Desc.setVisibility(View.GONE);
+                        //attack2Desc.setVisibility(View.GONE);
                     }
                     else{
                         if(split[1].isEmpty()){
                             attack2Desc.setText("");
-                            attack2Desc.setVisibility(View.GONE);
+                            //attack2Desc.setVisibility(View.GONE);
                         }
                         else{
                             attack2Desc.setText(split[1]);
                         }
                     }
 
-                    attack3.setVisibility(View.GONE);
-                    attack4.setVisibility(View.GONE);
+                    //attack3.setVisibility(View.GONE);
+                    //attack4.setVisibility(View.GONE);
                 }
                 else{
                     if(nbAttacks == 3){
@@ -1036,19 +1045,19 @@ public class MainActivity extends AppCompatActivity {
                         attack1Name.setText(key);
                         if(split[0].isEmpty()){
                             attack1Power.setText("0");
-                            attack1Power.setVisibility(View.GONE);
+                            //attack1Power.setVisibility(View.GONE);
                         }
                         else{
                             attack1Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack1Desc.setText("");
-                            attack1Desc.setVisibility(View.GONE);
+                            //attack1Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack1Desc.setText("");
-                                attack1Desc.setVisibility(View.GONE);
+                                //attack1Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack1Desc.setText(split[1]);
@@ -1064,19 +1073,19 @@ public class MainActivity extends AppCompatActivity {
                         attack2Name.setText(key);
                         if(split[0].isEmpty()){
                             attack2Power.setText("0");
-                            attack2Power.setVisibility(View.GONE);
+                            //attack2Power.setVisibility(View.GONE);
                         }
                         else{
                             attack2Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack2Desc.setText("");
-                            attack2Desc.setVisibility(View.GONE);
+                            //attack2Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack2Desc.setText("");
-                                attack2Desc.setVisibility(View.GONE);
+                                //attack2Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack2Desc.setText(split[1]);
@@ -1091,25 +1100,25 @@ public class MainActivity extends AppCompatActivity {
                         attack3Name.setText(key);
                         if(split[0].isEmpty()){
                             attack3Power.setText("0");
-                            attack3Power.setVisibility(View.GONE);
+                            //attack3Power.setVisibility(View.GONE);
                         }
                         else{
                             attack3Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack3Desc.setText("");
-                            attack3Desc.setVisibility(View.GONE);
+                            //attack3Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack3Desc.setText("");
-                                attack3Desc.setVisibility(View.GONE);
+                                //attack3Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack3Desc.setText(split[1]);
                             }
                         }
-                        attack4.setVisibility(View.GONE);
+                        //attack4.setVisibility(View.GONE);
                     }
                     else{
                         //on process l'attaque 1
@@ -1120,19 +1129,19 @@ public class MainActivity extends AppCompatActivity {
                         attack1Name.setText(key);
                         if(split[0].isEmpty()){
                             attack1Power.setText("0");
-                            attack1Power.setVisibility(View.GONE);
+                            //attack1Power.setVisibility(View.GONE);
                         }
                         else{
                             attack1Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack1Desc.setText("");
-                            attack1Desc.setVisibility(View.GONE);
+                            //attack1Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack1Desc.setText("");
-                                attack1Desc.setVisibility(View.GONE);
+                                //attack1Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack1Desc.setText(split[1]);
@@ -1148,19 +1157,19 @@ public class MainActivity extends AppCompatActivity {
                         attack2Name.setText(key);
                         if(split[0].isEmpty()){
                             attack2Power.setText("0");
-                            attack2Power.setVisibility(View.GONE);
+                            //attack2Power.setVisibility(View.GONE);
                         }
                         else{
                             attack2Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack2Desc.setText("");
-                            attack2Desc.setVisibility(View.GONE);
+                            //attack2Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack2Desc.setText("");
-                                attack2Desc.setVisibility(View.GONE);
+                                //attack2Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack2Desc.setText(split[1]);
@@ -1175,19 +1184,19 @@ public class MainActivity extends AppCompatActivity {
                         attack3Name.setText(key);
                         if(split[0].isEmpty()){
                             attack3Power.setText("0");
-                            attack3Power.setVisibility(View.GONE);
+                            //attack3Power.setVisibility(View.GONE);
                         }
                         else{
                             attack3Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack3Desc.setText("");
-                            attack3Desc.setVisibility(View.GONE);
+                            //attack3Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack3Desc.setText("");
-                                attack3Desc.setVisibility(View.GONE);
+                                //attack3Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack3Desc.setText(split[1]);
@@ -1201,19 +1210,19 @@ public class MainActivity extends AppCompatActivity {
                         attack4Name.setText(key);
                         if(split[0].isEmpty()){
                             attack4Power.setText("0");
-                            attack4Power.setVisibility(View.GONE);
+                            //attack4Power.setVisibility(View.GONE);
                         }
                         else{
                             attack4Power.setText(split[0]);
                         }
                         if(split.length < 2){
                             attack4Desc.setText("");
-                            attack4Desc.setVisibility(View.GONE);
+                            //attack4Desc.setVisibility(View.GONE);
                         }
                         else{
                             if(split[1].isEmpty()){
                                 attack4Desc.setText("");
-                                attack4Desc.setVisibility(View.GONE);
+                                //attack4Desc.setVisibility(View.GONE);
                             }
                             else{
                                 attack4Desc.setText(split[1]);
