@@ -15,10 +15,10 @@
     </string-array>
 
     <string-array name="stages_array">
-        <item>Basic</item>
-        <item>Stage1</item>
-        <item>Stage2</item>
-        <item>Mega</item>
+        <item>basic</item>
+        <item>stage1</item>
+        <item>stage2</item>
+        <item>mega</item>
     </string-array>
 
 </resources>
