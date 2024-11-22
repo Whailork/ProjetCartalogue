@@ -7,6 +7,8 @@
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -26,6 +28,16 @@
             </intent-filter>
         </activity>
         <activity android:name=".Cartalogue"/>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.navigationdrawerfinal.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

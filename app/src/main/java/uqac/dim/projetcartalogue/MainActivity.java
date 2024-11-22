@@ -4,14 +4,20 @@ import static android.graphics.Color.argb;
 import static android.graphics.Color.rgb;
 import static android.graphics.Color.valueOf;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,10 +38,12 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
+import com.google.android.datatransport.BuildConfig;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -44,10 +52,15 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,9 +71,13 @@ public class MainActivity extends AppCompatActivity {
     Button btnCapture, btnCamera, btnCopy;
     TextView txtScannedData, txtType;
     Bitmap imgBitmap;
+    Uri imageUri;
+    String currentPhotoPath;
     ArrayList<Text.TextBlock> inReadingOrder;
     private static final int REQUEST_CAMERA_CODE = 100;
     private static final int REQUEST_IMAGES_CODE = 110;
+    private static final int REQUEST_WRITE_STORAGE_CODE = 120;
+    private static final int REQUEST_READ_STORAGE_CODE = 130;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
     List<CarteModel> carteList;
@@ -178,24 +195,20 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.READ_MEDIA_IMAGES") != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{"android.permission.READ_MEDIA_IMAGES"}, REQUEST_IMAGES_CODE);
         }
+        if (ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{"android.permission.WRITE_EXTERNAL_STORAGE"}, REQUEST_WRITE_STORAGE_CODE);
+        }
+        if (ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{"android.permission.READ_EXTERNAL_STORAGE"}, REQUEST_READ_STORAGE_CODE);
+        }
         //pour la bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
 
         //click pour camera
-        btnCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
 
-                    Intent getPhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(getPhoto, 2);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
 
-            }
-        });
+
     }
     private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
 
@@ -239,6 +252,23 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
         return true;
     };
+    public void StartCameraActivity(View view){
+        try {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            File photoFile = null;
+            photoFile = createImageFile();
+
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.navigationdrawerfinal.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, 2);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -252,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (data != null) {
+           // if (data != null) {
                 if (requestCode == 1) {
                     Uri imageUri = data.getData();
 
@@ -268,15 +298,17 @@ public class MainActivity extends AppCompatActivity {
                 if (requestCode == 2) {
                     try {
 
-                        Bundle extras = data.getExtras();
-                        imgBitmap = (Bitmap) extras.get("data");
-
+                        File f = new File(currentPhotoPath);
+                        Uri contentUri = Uri.fromFile(f);
+                        ImageDecoder.Source source =  ImageDecoder.createSource(this.getContentResolver(), contentUri);
+                        imgBitmap = ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.RGBA_F16, true);
+                        imgBitmap = rotateBitmap(imgBitmap,270);
                         ExtractText(imgBitmap);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
-            }
+           // }
 
 
         }
@@ -521,6 +553,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        currentPhotoPath = image.getPath();
+        return image;
+    }
+
 
     ArrayList<String> removeEmpty(ArrayList<String> inArray) {
         ArrayList<String> newStrArray = new ArrayList<>();
@@ -1297,7 +1344,7 @@ public class MainActivity extends AppCompatActivity {
         int height = original.getHeight();
 
         Matrix matrix = new Matrix();
-        matrix.postRotate(90);
+        matrix.postRotate(degrees);
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(original, width, height, true);
         Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
 

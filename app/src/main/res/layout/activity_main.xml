@@ -41,7 +41,8 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="center"
-            android:text="Prendre une photo"/>
+            android:text="Prendre une photo"
+            android:onClick="StartCameraActivity"/>
         <LinearLayout
             android:id="@+id/btnLayout"
             android:layout_width="match_parent"
