@@ -68,10 +68,9 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
 
-    Button btnCapture, btnCamera, btnCopy;
+    Button btnCamera;
     TextView txtScannedData, txtType;
     Bitmap imgBitmap;
-    Uri imageUri;
     String currentPhotoPath;
     ArrayList<Text.TextBlock> inReadingOrder;
     private static final int REQUEST_CAMERA_CODE = 100;
@@ -80,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_STORAGE_CODE = 130;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
-    List<CarteModel> carteList;
 
 
 
@@ -119,42 +117,43 @@ public class MainActivity extends AppCompatActivity {
     Pattern stageFR = Pattern.compile("niveau\\s?[12]", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
 
     Pattern megaEN = Pattern.compile("mega", 2); //testé et fonctionnel
-    Pattern megaFR = Pattern.compile("méga", 2); //testé et fonctionnel
+    Pattern megaFR = Pattern.compile("m.ga", 2); //testé et fonctionnel
 
-    Pattern alolanEN = Pattern.compile("Alolan", Pattern.CASE_INSENSITIVE);
-    Pattern alolanFR = Pattern.compile("d'alola", 2);
+    Pattern alolanEN = Pattern.compile("Alolan", Pattern.CASE_INSENSITIVE); //testé et fonctionnel
+    Pattern alolanFR = Pattern.compile("d'alola", 2); //testé et fonctionnel
 
-    Pattern evolvesFromEN = Pattern.compile("Evolves from", 2);
-    Pattern evolvesFromFR = Pattern.compile("Évolution de", 2);
+    Pattern evolvesFromEN = Pattern.compile("Evolves\\s?f?r?o?m?\\s?.{3,13}", 2); //testé et fonctionnel
+    Pattern evolvesFromFR = Pattern.compile(".volution\\s?d?e?\\s?.{3,13}", 2); //testé et fonctionnel
 
-    Pattern pvEN = Pattern.compile("HP", Pattern.CASE_INSENSITIVE);
-    Pattern pvFR = Pattern.compile("PV", 2);
+    Pattern pvEN = Pattern.compile("^[HW]?.?\\s?\\d{2,3}", Pattern.CASE_INSENSITIVE);//testé et fonctionnel
+    Pattern pvFR = Pattern.compile("^P?.?\\s?\\d{2,3}", 2);//testé et fonctionnel
 
     //MIDDLE
-    Pattern numberEN = Pattern.compile("^NO\\.?\\s*\\d{3}", Pattern.CASE_INSENSITIVE);
-    Pattern numberFR = Pattern.compile("^N°\\s*\\d{3}", Pattern.CASE_INSENSITIVE);
+    Pattern numberEN = Pattern.compile("^N?O?\\.?\\s*\\d{3}", Pattern.CASE_INSENSITIVE); //testé et fonctionnel
+    Pattern numberFR = Pattern.compile("^N?°?\\s*\\d{3}", Pattern.CASE_INSENSITIVE); //testé et fonctionnel
 
-    Pattern pokemonTypeEN = Pattern.compile(".*pokémon", 2);
-    Pattern pokemonTypeFR = Pattern.compile("pokémon.*", 2);
+    Pattern pokemonTypeEN = Pattern.compile("[\\w\\s]{2,16}pok.mon\\s?", 2); //testé et fonctionnel
+    Pattern pokemonTypeFR = Pattern.compile("^\\s?pok.mon[\\w\\s]{5,}", 2); //testé et fonctionnel
 
-    Pattern heightEN = Pattern.compile("HT\\s*:?\\s*.*", 2);
+    Pattern heightEN = Pattern.compile("H?T?\\s*:?\\s*\\d{1,3}['\\s]?\\d{2}", 2); // testé et fonctionnel
     Pattern heightFR = Pattern.compile("Taille\\s?:?\\s?(\\d+[\\.,]\\d+)\\s?m?", 2); // testé et fonctionnel
 
-    Pattern weightEN = Pattern.compile("WT\\s*:?\\s*.*", 2);
+    Pattern weightEN = Pattern.compile("WT\\s*:?\\s*\\d{1,4}\\.?\\d\\s?l?b?s?", 2); // testé et fonctionnel
     Pattern weightFR = Pattern.compile("Poids\\s?:?\\s?(\\d+[\\.,]\\d+)\\s?k?g?"); // testé et fonctionnel
 
     //BOTTOM
     Pattern weaknessEN = Pattern.compile("weakness", 2);
-    Pattern weaknessFR = Pattern.compile("faiblesse", 2);
+    Pattern weaknessFR = Pattern.compile("faib[li]esse", 2);
 
     Pattern resistanceEN = Pattern.compile("resistance", 2);
-    Pattern resistanceFR = Pattern.compile("Résistance", 2);
+    Pattern resistanceFR = Pattern.compile("R.sistance", 2);
 
     Pattern retreatEN = Pattern.compile("retreat cost", 2);
     Pattern retreatFR = Pattern.compile("Retraite", 2);
 
 
     Pattern noSpecialChar = Pattern.compile("[^\\w\\s]", Pattern.CASE_INSENSITIVE);
+    Pattern digitsOnly = Pattern.compile("\\d{2,3}",2);
 
     //des variables spéciales pour le scan des cartes
     boolean evolvesFrom = false;
@@ -478,12 +477,18 @@ public class MainActivity extends AppCompatActivity {
                 String attackPower = "";
                 String attackName = "";
                 String attackDescription = "";
+                int startIndex =-1;
+                int endIndex =-1;
                 ArrayList<Text.TextBlock> middleBlocks = new ArrayList<>();
                 ArrayList<String> attackStrings = new ArrayList<>();
                 for(int i = 0; i < inReadingOrder.size();i++){
                     int boxLeft = inReadingOrder.get(i).getBoundingBox().left;
                     if(boxLeft > middleLeft + 50 && boxLeft < bottomLeft-50){
+                        if(startIndex ==-1){
+                            startIndex = i;
+                        }
                         middleBlocks.add(inReadingOrder.get(i));
+                        endIndex = i;
                     }
                 }
                 while(!middleBlocks.isEmpty()){
@@ -493,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
                     attackDescription = "";
                     ArrayList<Integer> indexes = new ArrayList<>();
                     int left = middleBlocks.get(0).getBoundingBox().left;
-                    for(int i = 0; i < middleBlocks.size();i++){
+                    for(int i = endIndex; i > startIndex -1;i--){
                         int boxLeft = middleBlocks.get(i).getBoundingBox().left;
                         if(boxLeft < left + 100 && boxLeft > left - 100){
                             strInReadingOrder.remove(i);
@@ -504,6 +509,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     for (int i = indexes.size() -1; i>= 0;i--) {
                         middleBlocks.remove((int)indexes.get(i));
+                        endIndex--;
                     }
                     indexes.clear();
                     for(int i = 0; i < attackStrings.size();i++){
@@ -527,24 +533,48 @@ public class MainActivity extends AppCompatActivity {
                     //on clean les textBlocks qui sont vides
                     strInReadingOrder = removeEmpty(strInReadingOrder);
                 }
-                // il va falloir fetch la description
+
+                //on fetch la description
+                String strDescription =strPokeType + ": \n";
+                int longestIndex = -1;
+                int longestCharNumber = -1;
+                for(int x = 0; x< strInReadingOrder.size(); x++){
+
+                    if(strInReadingOrder.get(x).length() > longestCharNumber){
+                        longestIndex = x;
+                        longestCharNumber = strInReadingOrder.get(x).length();
+                    }
+                }
+                if(longestIndex > -1){
+                    strDescription = strDescription + strInReadingOrder.get(longestIndex);
+                    strInReadingOrder.remove(longestIndex);
+                }
 
                 //création de la carte à partir des infos récupérés
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
-                if (evolvesFrom) {
-                    newCarteModel.setEvolvesFrom(strEvolvesFrom);
-                }
+                newCarteModel.setEvolvesFrom(strEvolvesFrom);
+
                 //process la pv string
-                //newCarteModel.setPv();
+                Matcher mDigits = digitsOnly.matcher(strPv);
+                if(mDigits.find()){
+                    String strNumber = strPv.substring(mDigits.start(),mDigits.end());
+                    newCarteModel.setPv(Integer.parseInt(strNumber));
+                };
+                //process la string de numero
                 newCarteModel.setNumero(strNO);
                 newCarteModel.setPokemonType(strPokeType);
                 newCarteModel.setHeight(strHeight);
                 newCarteModel.setWeight(strWeight);
                 newCarteModel.setNom(strNom);
-
+                newCarteModel.setDescription(strDescription);
                 //on fait tourner le bitmap pour que l'image soit dans le bon sens
-                newCarteModel.setImgBitmap(rotateBitmap(imgBitmap,90));
+                if(imgBitmap.getHeight() < imgBitmap.getWidth()){
+                    newCarteModel.setImgBitmap(rotateBitmap(imgBitmap,90));
+                }
+                else{
+                    newCarteModel.setImgBitmap(imgBitmap);
+                }
                 //on fait un popup pour permettre a l'utilisateur d'editer les infos avant de créer la carte
                 EditCarteModelPopup(newCarteModel);
 
@@ -573,7 +603,8 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> newStrArray = new ArrayList<>();
         for (int i = inArray.size() -1; i >= 0; i--) {
             String trimmedText = inArray.get(i).trim();
-            if (!trimmedText.isEmpty()) {
+            String withoutSpecialChars =trimmedText.replaceAll("\\W","");
+            if (!withoutSpecialChars.isEmpty()) {
                 newStrArray.add(0,inArray.get(i));
             } else {
                 inReadingOrder.remove(i);
@@ -686,31 +717,30 @@ public class MainActivity extends AppCompatActivity {
     }
     String ScanForEvolvesFrom(ArrayList<String> strInReadingOrder){
         String strEvolvesFrom = "";
-        if (evolvesFrom) {
-            Matcher mEvolvesFrom;
-            for (int i = 0; i < strInReadingOrder.size(); i++) {
+        Matcher mEvolvesFrom;
+        for (int i = 0; i < strInReadingOrder.size(); i++) {
 
-                mEvolvesFrom = evolvesFromFR.matcher(strInReadingOrder.get(i));
+            mEvolvesFrom = evolvesFromFR.matcher(strInReadingOrder.get(i));
+            if (mEvolvesFrom.find()) {
+                strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
+                String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mEvolvesFrom = evolvesFromEN.matcher(strInReadingOrder.get(i));
                 if (mEvolvesFrom.find()) {
                     strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
                     String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
                     strInReadingOrder.remove(i);
                     strInReadingOrder.add(i, newString);
                     break;
-                } else {
-                    mEvolvesFrom = evolvesFromEN.matcher(strInReadingOrder.get(i));
-                    if (mEvolvesFrom.find()) {
-                        strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
-                        String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
-                        break;
-                    }
                 }
-
             }
 
         }
+
+
         return strEvolvesFrom;
     }
     String ScanForPV(ArrayList<String> strInReadingOrder){
@@ -738,6 +768,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+
         return strPv;
     }
     String ScanForNumber(ArrayList<String> strInReadingOrder){
@@ -749,6 +780,7 @@ public class MainActivity extends AppCompatActivity {
                 middleLeft = inReadingOrder.get(i).getBoundingBox().left;
                 strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
                 String newString = strInReadingOrder.get(i).replace(strNO,"");
+                strNO = strNO.substring(mNO.end() -3, mNO.end());
                 strInReadingOrder.remove(i);
                 strInReadingOrder.add(i, newString);
                 break;
@@ -758,6 +790,7 @@ public class MainActivity extends AppCompatActivity {
                     middleLeft = inReadingOrder.get(i).getBoundingBox().left;
                     strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
                     String newString = strInReadingOrder.get(i).replace(strNO,"");
+                    strNO = strNO.substring(mNO.end() -3, mNO.end());
                     strInReadingOrder.remove(i);
                     strInReadingOrder.add(i, newString);
                     break;
@@ -898,7 +931,31 @@ public class MainActivity extends AppCompatActivity {
         return strResistance;
     }
     String ScanForRetreat(ArrayList<String> strInReadingOrder){
-        return "";
+        Matcher mRetreat;
+        String strRetreat = "";
+        for(int i = 0; i < strInReadingOrder.size(); i++){
+            mRetreat = resistanceFR.matcher(strInReadingOrder.get(i));
+            if( mRetreat.find()){
+                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                strRetreat = strInReadingOrder.get(i).substring( mRetreat.start(), mRetreat.end());
+                String newString = strInReadingOrder.get(i).replace(strRetreat,"");
+                strInReadingOrder.remove(i);
+                strInReadingOrder.add(i, newString);
+                break;
+            } else {
+                mRetreat = resistanceEN.matcher(strInReadingOrder.get(i));
+                if( mRetreat.find()){
+                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    strRetreat = strInReadingOrder.get(i).substring( mRetreat.start(), mRetreat.end());
+                    String newString = strInReadingOrder.get(i).replace(strRetreat,"");
+                    strInReadingOrder.remove(i);
+                    strInReadingOrder.add(i, newString);
+                    break;
+                }
+            }
+
+        }
+        return strRetreat;
     }
 
     void EditCarteModelPopup(CarteModel modelToEdit){
