@@ -6,6 +6,74 @@
     android:orientation="vertical"
     >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/searchBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:text="X"
+            android:textSize="18dp"
+            android:background="@drawable/circle_background"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btnAToZ"
+            android:background="@drawable/btn_unclicked"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="A-Z"
+            android:layout_weight="1" />
+        <Button
+            android:id="@+id/btnType"
+            android:background="@drawable/btn_unclicked"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="type"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/btnNo"
+            android:background="@drawable/btn_unclicked"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="No"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnStage"
+            android:background="@drawable/btn_unclicked"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Stage"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:id="@+id/imgArrow"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/upwards_arrow"
+            android:padding="15dp"
+            android:backgroundTint="#cccccc"/>
+
+
+
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCarte"
         android:layout_width="match_parent"
