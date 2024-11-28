@@ -20,6 +20,10 @@ import java.util.UUID;
 public class CarteModel implements Parcelable {
     @PrimaryKey
     int id;
+
+    @ColumnInfo(name = "idUtilisateur")
+    int idUtilisateur;
+
     @ColumnInfo (name = "numero")
     String numero;
 
@@ -71,6 +75,7 @@ public class CarteModel implements Parcelable {
     }
     public CarteModel(){
         id = UUID.randomUUID().hashCode();
+        idUtilisateur = -1;
         imageId = -1;
         type = "";
         nom = "";

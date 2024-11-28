@@ -25,5 +25,4 @@ public class CardViewHolder extends RecyclerView.ViewHolder {
         backgroundLayout = (ConstraintLayout)itemView.findViewById(R.id.backgroundLayout);
         view  = itemView;
     }
-
 }
