@@ -183,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
         bottomLeft = 0;
         //on get les views
         btnCamera = findViewById(R.id.CameraBtn);
-        txtScannedData = findViewById(R.id.scannedData);
-        txtType = findViewById(R.id.typeTxt);
 
         //permission pour la camera
         if (ContextCompat.checkSelfPermission(MainActivity.this, "android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED) {
@@ -551,6 +549,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //création de la carte à partir des infos récupérés
+                /// set idUtilisateur pour les cartes
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
                 newCarteModel.setEvolvesFrom(strEvolvesFrom);

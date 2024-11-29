@@ -65,6 +65,8 @@ public class Cartalogue extends AppCompatActivity {
         imgArrow = findViewById(R.id.imgArrow);
         btnReset = findViewById(R.id.btnReset);
         btnReset.setOnClickListener(this::btnResetClicked);
+
+
         //set le listener de la search bar
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -122,12 +124,11 @@ public class Cartalogue extends AppCompatActivity {
                     final int resourceId = resources.getIdentifier(carteModel.nom.toLowerCase(), "drawable", getApplicationContext().getPackageName());
                     if (resourceId == 0) {
                         // If image not found, set a default image (pokeball)
-                        carteModel.imageId = resources.getIdentifier("pikachu", "drawable", getApplicationContext().getPackageName());
+                        carteModel.imageId = resources.getIdentifier("poke", "drawable", getApplicationContext().getPackageName());
                     } else {
                         carteModel.imageId = resourceId;  // Set the resource image
                     }
                 }
-
                 // Notify the adapter that the data has changed
                 adapter.notifyDataSetChanged();
             }

@@ -14,5 +14,5 @@
     <color name="Dragon">#0B6DC3</color>
     <color name="Dark">#5A5465</color>
     <color name="Fairy">#EC8FE6</color>
-
+    <color name="None">#00FFFFFF</color>
 </resources>

@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.firebase.inappmessaging)
     implementation(libs.room.common)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.contentpager)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

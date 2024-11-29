@@ -3,13 +3,16 @@
     <item
         android:id="@+id/item_ouverture_fragment_1"
         android:title="User"
-        android:icon="@drawable/pikachu" />
+        android:icon="@drawable/machop"
+        android:iconTint="@null"/>
     <item
         android:id="@+id/item_ouverture_fragment_2"
         android:title="Capture"
-        android:icon="@drawable/abra" />
+        android:icon="@drawable/abra"
+        android:iconTint="@null"/>
     <item
         android:id="@+id/item_ouverture_fragment_3"
         android:title="Collection"
-        android:icon="@drawable/abomasnow" />
+        android:icon="@drawable/collection"
+        android:iconTint="@null"/>
 </menu>
