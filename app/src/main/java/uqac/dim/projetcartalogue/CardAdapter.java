@@ -15,6 +15,7 @@ import java.util.List;
 public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
     List<CarteModel> listCarte = Collections.emptyList();
     Context context;
+    private OnClickListener onClickListener;
 
     public CardAdapter(List<CarteModel> list, Context context){
         this.listCarte = list;
@@ -38,8 +39,14 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
         viewHolder.nomCarte.setText(listCarte.get(position).nom);
         viewHolder.typePokemon.setText(listCarte.get(position).type);
         viewHolder.backgroundLayout.setBackgroundColor(ContextCompat.getColor(context,context.getResources().getIdentifier(viewHolder.typePokemon.getText().toString(), "color", context.getPackageName())));
+        viewHolder.itemView.setOnClickListener(view->{
+            if(onClickListener != null){
+                onClickListener.onClick(position,listCarte.get(position));
+            }
+        });
 
     }
+
 
     @Override
     public int getItemCount() {
@@ -50,5 +57,15 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
     {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    // Setter for the click listener
+    public void setOnClickListener(OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
+    // Interface for the click listener
+    public interface OnClickListener {
+        void onClick(int position, CarteModel model);
     }
 }
