@@ -2,6 +2,7 @@ package uqac.dim.projetcartalogue;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -10,13 +11,21 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.JsonWriter;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.Spinner;
 import android.widget.Toolbar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
@@ -26,7 +35,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 
@@ -101,8 +112,475 @@ public class Cartalogue extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerViewCarte);
 
         adapter = new CardAdapter(carteList, this);
-        recyclerView.setAdapter(adapter);
+        adapter.setOnClickListener(new CardAdapter.OnClickListener() {
+            @Override
+            public void onClick(int position, CarteModel model) {
+                // copier collé de la fonction editCartePopup, c'est juste que je pouvais pas la rendre statci donc je la copy paste ici
+                LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+                View popupView = inflater.inflate(R.layout.edit_card_layout, null);
 
+                // create the popup window
+                int width = LinearLayout.LayoutParams.MATCH_PARENT;
+                int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                boolean focusable = true; // lets taps outside the popup also dismiss it
+                final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+                // show the popup window
+                // which view you pass in doesn't matter, it is only used for the window tolken
+                popupWindow.showAtLocation(searchBar, Gravity.CENTER, 0, 0);
+
+                //on get les views pour editer et on leur set les bonnes valeurs
+                ImageView pokemonImg = popupView.findViewById(R.id.pokemonImg);
+                EditText numberEdit = popupView.findViewById(R.id.numberEdit);
+                EditText nameEdit = popupView.findViewById(R.id.nameEdit);
+                Spinner typeSpinner = popupView.findViewById(R.id.typeSpinner);
+                EditText pvEdit = popupView.findViewById(R.id.PvEdit);
+                CheckBox chkIsAlolan = popupView.findViewById(R.id.isAlolan);
+                Spinner stageSpinner = popupView.findViewById(R.id.stageSpinner);
+                EditText evolvesFromEdit = popupView.findViewById(R.id.evolvesFromEdit);
+                EditText heightEdit = popupView.findViewById(R.id.heightEdit);
+                EditText weightEdit = popupView.findViewById(R.id.weightEdit);
+
+                //Attaque 1 :
+                LinearLayout attack1 = popupView.findViewById(R.id.attack1);
+                EditText attack1Name = popupView.findViewById(R.id.attack1Name);
+                EditText attack1Desc = popupView.findViewById(R.id.attack1Desc);
+                EditText attack1Power = popupView.findViewById(R.id.attack1Power);
+
+                //Attaque 2 :
+                LinearLayout attack2 = popupView.findViewById(R.id.attack2);
+                EditText attack2Name = popupView.findViewById(R.id.attack2Name);
+                EditText attack2Desc = popupView.findViewById(R.id.attack2Desc);
+                EditText attack2Power = popupView.findViewById(R.id.attack2Power);
+
+                //Attaque 3 :
+                LinearLayout attack3 = popupView.findViewById(R.id.attack3);
+                EditText attack3Name = popupView.findViewById(R.id.attack3Name);
+                EditText attack3Desc = popupView.findViewById(R.id.attack3Desc);
+                EditText attack3Power = popupView.findViewById(R.id.attack3Power);
+
+                //Attaque 4 :
+                LinearLayout attack4 = popupView.findViewById(R.id.attack4);
+                EditText attack4Name = popupView.findViewById(R.id.attack4Name);
+                EditText attack4Desc = popupView.findViewById(R.id.attack4Desc);
+                EditText attack4Power = popupView.findViewById(R.id.attack4Power);
+
+                EditText descriptionEdit = popupView.findViewById(R.id.descriptionEdit);
+                Button saveBtn = popupView.findViewById(R.id.saveBtn);
+                Button cancelBtn = popupView.findViewById(R.id.cancelBtn);
+
+
+                // on set les valeurs des views
+                pokemonImg.setImageBitmap(model.getImgBitmap());
+                numberEdit.setText(model.getNumero());
+                nameEdit.setText(model.getNom());
+                //on set le selected item du spinner
+                typeSpinner.setSelection(PokemonTypeColors.valueOf(model.type).ordinal());
+
+                pvEdit.setText(model.getPv() + "");
+                chkIsAlolan.setChecked(model.isAlolan());
+                //on set le selected item du spinner
+                List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
+                if(model.getStage().matches("(?i)base") || model.getStage().matches("(?i)basic")  ){
+                    model.setStage(stages.get(0));
+                }
+                if(model.getStage().matches("(?i)niveau\\s?1") || model.getStage().matches("(?i)stage\\s?1")){
+                    model.setStage(stages.get(1));
+                }
+                if(model.getStage().matches("niveau\\s?2") || model.getStage().matches("(?i)stage\\s?2")){
+                    model.setStage(stages.get(2));
+                }
+                stageSpinner.setSelection(stages.indexOf(model.getStage().toLowerCase()));
+
+                evolvesFromEdit.setText(model.getEvolvesFrom());
+                heightEdit.setText(model.getHeight());
+                weightEdit.setText(model.getWeight());
+
+                int nbAttacks = model.attacks.size();
+                // on disable des éléments du layout selon le nombre d'attaques
+                if(nbAttacks == 0){
+            /*attack1.setVisibility(View.GONE);
+            attack2.setVisibility(View.GONE);
+            attack3.setVisibility(View.GONE);
+            attack4.setVisibility(View.GONE);*/
+                }
+                else{
+                    if(nbAttacks == 1){
+                        //on process l'attaque 1
+                        Enumeration<String> keys = model.attacks.keys();
+                        String key1 = keys.nextElement();
+                        String str = model.attacks.get(key1);
+                        String[] split;
+                        if(!Objects.equals(str, "|")){
+                             split = str.split("\\|");
+                            attack1Name.setText(key1);
+                            if(split[0].isEmpty()){
+                                attack1Power.setText("0");
+                                //attack1Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
+                                attack1Desc.setText("");
+                                //attack1Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                if(split[1].isEmpty()){
+                                    attack1Desc.setText("");
+                                    //attack1Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack1Desc.setText(split[1]);
+                                }
+                            }
+                        }
+
+                /*attack2.setVisibility(View.GONE);
+                attack3.setVisibility(View.GONE);
+                attack4.setVisibility(View.GONE);*/
+                    }
+                    else{
+                        if(nbAttacks == 2){
+                            //on process l'attaque 1
+                            Enumeration<String> keys = model.attacks.keys();
+                            String key = keys.nextElement();
+                            String str = model.attacks.get(key);
+                            String[] split;
+                            if(!Objects.equals(str, "|")){
+                                 split = str.split("\\|");
+                                attack1Name.setText(key);
+                                if(split[0].isEmpty()){
+                                    attack1Power.setText("0");
+                                    //attack1Power.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack1Power.setText(split[0]);
+                                }
+                                if(split.length < 2){
+                                    attack1Desc.setText("");
+                                    //attack1Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    if(split[1].isEmpty()){
+                                        attack1Desc.setText("");
+                                        //attack1Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack1Desc.setText(split[1]);
+                                    }
+                                }
+
+                            }
+
+
+                            //on process l'attaque 2
+                            key = keys.nextElement();
+                            str = model.attacks.get(key);
+                            if(!Objects.equals(str, "|")){
+                                split = str.split("\\|");
+
+                                attack2Name.setText(key);
+                                if(split[0].isEmpty()){
+                                    attack2Power.setText("0");
+                                    //attack2Power.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack2Power.setText(split[0]);
+                                }
+                                if(split.length < 2){
+                                    attack2Desc.setText("");
+                                    //attack2Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    if(split[1].isEmpty()){
+                                        attack2Desc.setText("");
+                                        //attack2Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack2Desc.setText(split[1]);
+                                    }
+                                }
+                            }
+
+
+                            //attack3.setVisibility(View.GONE);
+                            //attack4.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(nbAttacks == 3){
+                                //on process l'attaque 1
+                                Enumeration<String> keys = model.attacks.keys();
+                                String key = keys.nextElement();
+                                String str = model.attacks.get(key);
+                                String[] split;
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+                                    attack1Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack1Power.setText("0");
+                                        //attack1Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack1Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack1Desc.setText("");
+                                        //attack1Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack1Desc.setText("");
+                                            //attack1Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack1Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+
+
+
+                                //on process l'attaque 2
+                                key = keys.nextElement();
+                                str = model.attacks.get(key);
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+
+                                    attack2Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack2Power.setText("0");
+                                        //attack2Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack2Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack2Desc.setText("");
+                                        //attack2Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack2Desc.setText("");
+                                            //attack2Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack2Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+
+
+                                //on process l'attaque 3
+                                key = keys.nextElement();
+                                str = model.attacks.get(key);
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+
+                                    attack3Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack3Power.setText("0");
+                                        //attack3Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack3Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack3Desc.setText("");
+                                        //attack3Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack3Desc.setText("");
+                                            //attack3Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack3Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+
+                                //attack4.setVisibility(View.GONE);
+                            }
+                            else{
+                                //on process l'attaque 1
+                                Enumeration<String> keys = model.attacks.keys();
+                                String key = keys.nextElement();
+                                String str = model.attacks.get(key);
+                                String[] split;
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+                                    attack1Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack1Power.setText("0");
+                                        //attack1Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack1Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack1Desc.setText("");
+                                        //attack1Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack1Desc.setText("");
+                                            //attack1Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack1Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+
+
+
+                                //on process l'attaque 2
+                                key = keys.nextElement();
+                                str = model.attacks.get(key);
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+
+                                    attack2Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack2Power.setText("0");
+                                        //attack2Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack2Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack2Desc.setText("");
+                                        //attack2Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack2Desc.setText("");
+                                            //attack2Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack2Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+                                //on process l'attaque 3
+                                key = keys.nextElement();
+                                str = model.attacks.get(key);
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+
+                                    attack3Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack3Power.setText("0");
+                                        //attack3Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack3Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack3Desc.setText("");
+                                        //attack3Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack3Desc.setText("");
+                                            //attack3Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack3Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+
+                                //on process l'attaque 4
+                                key = keys.nextElement();
+                                str = model.attacks.get(key);
+                                if(!Objects.equals(str, "|")){
+                                    split = str.split("\\|");
+
+                                    attack4Name.setText(key);
+                                    if(split[0].isEmpty()){
+                                        attack4Power.setText("0");
+                                        //attack4Power.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        attack4Power.setText(split[0]);
+                                    }
+                                    if(split.length < 2){
+                                        attack4Desc.setText("");
+                                        //attack4Desc.setVisibility(View.GONE);
+                                    }
+                                    else{
+                                        if(split[1].isEmpty()){
+                                            attack4Desc.setText("");
+                                            //attack4Desc.setVisibility(View.GONE);
+                                        }
+                                        else{
+                                            attack4Desc.setText(split[1]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                descriptionEdit.setText(model.getDescription());
+
+                saveBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //on fait la sauvegarde des données
+                        //modelToEdit.setId(carteModel.hashCode());
+                        model.setNumero(numberEdit.getText().toString());
+                        model.setNom(nameEdit.getText().toString());
+                        model.setType(typeSpinner.getSelectedItem().toString());
+                        model.setPv(Integer.parseInt(pvEdit.getText().toString()));
+                        model.setAlolan(chkIsAlolan.isActivated());
+                        model.setStage(stageSpinner.getSelectedItem().toString());
+                        model.setEvolvesFrom(evolvesFromEdit.getText().toString());
+                        model.setHeight(heightEdit.getText().toString());
+                        model.setWeight(weightEdit.getText().toString());
+                        model.setDescription(descriptionEdit.getText().toString());
+
+                        //on load les attaques
+                        if(attack1.getVisibility() != View.GONE){
+                            model.attacks.put(attack1Name.getText().toString(),attack1Power.getText().toString()+"|"+attack1Desc.getText().toString());
+                        }
+                        if(attack2.getVisibility() != View.GONE){
+                            model.attacks.put(attack2Name.getText().toString(),attack2Power.getText().toString()+"|"+attack2Desc.getText().toString());
+                        }
+                        if(attack3.getVisibility() != View.GONE){
+                            model.attacks.put(attack3Name.getText().toString(),attack3Power.getText().toString()+"|"+attack3Desc.getText().toString());
+                        }
+                        if(attack4.getVisibility() != View.GONE){
+                            model.attacks.put(attack4Name.getText().toString(),attack4Power.getText().toString()+"|"+attack4Desc.getText().toString());
+                        }
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                cbd.carteDao().delete(model);
+                                cbd.carteDao().addCarte(model);
+                            }
+                        }).start();
+
+                        popupWindow.dismiss();
+                    }
+                });
+
+                cancelBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        popupWindow.dismiss();
+
+                    }
+                });
+
+
+            }
+        });
+        recyclerView.setAdapter(adapter);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);

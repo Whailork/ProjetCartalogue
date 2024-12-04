@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     Button btnCamera;
-    TextView txtScannedData, txtType;
     Bitmap imgBitmap;
     String currentPhotoPath;
     ArrayList<Text.TextBlock> inReadingOrder;
@@ -79,35 +78,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_STORAGE_CODE = 130;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
-
-
-
-    //ordre :
-    /*
-    TOP
-     Base / basic
-     Niveau/ stage
-     mega evolution
-     alolan
-     evolves from
-    * nom
-     pv
-
-     MIDDLE
-     NO.
-     pokemon type
-     height
-     weight
-    * attaques
-
-    BOTTOM
-    * weakness
-    * resistance
-    * description
-    * retreat
-    * copyright
-    * illustration
-    * rarity*/
 
     //TOP
     Pattern basicEn = Pattern.compile("Basic", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
@@ -160,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
     int middleLeft = 0;
     int bottomLeft = 0;
 
+    // les variables de BD
     private CarteBD cbd;
     private CarteModel carteModel;
     private CarteDao carteDao;
@@ -200,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //pour la bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setVisibility(View.VISIBLE);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
 
         //click pour camera
@@ -366,15 +338,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 PokemonTypeColors matchingType = PokemonTypeColors.values()[highestMatchIndex];
-                txtType.setText(matchingType.name());
-                txtScannedData.setBackgroundColor(rgb(matchingType.getR(), matchingType.getG(), matchingType.getB()));
-
 
                 newCarteModel.type = matchingType.name();
-
-
-                //on scan les textblocks
-                txtScannedData.setText(task.getResult().getText());
 
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
                 inReadingOrder = new ArrayList<Text.TextBlock>();
@@ -496,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
                     attackDescription = "";
                     ArrayList<Integer> indexes = new ArrayList<>();
                     int left = middleBlocks.get(0).getBoundingBox().left;
-                    for(int i = endIndex; i > startIndex -1;i--){
+                    for(int i = middleBlocks.size() -1; i >= 0 ;i--){
                         int boxLeft = middleBlocks.get(i).getBoundingBox().left;
                         if(boxLeft < left + 100 && boxLeft > left - 100){
                             strInReadingOrder.remove(i);
@@ -607,6 +572,7 @@ public class MainActivity extends AppCompatActivity {
                 newStrArray.add(0,inArray.get(i));
             } else {
                 inReadingOrder.remove(i);
+
             }
         }
         return newStrArray;
@@ -969,7 +935,7 @@ public class MainActivity extends AppCompatActivity {
 
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window tolken
-        popupWindow.showAtLocation(txtScannedData, Gravity.CENTER, 0, 0);
+        popupWindow.showAtLocation(btnCamera, Gravity.CENTER, 0, 0);
 
         //on get les views pour editer et on leur set les bonnes valeurs
         ImageView pokemonImg = popupView.findViewById(R.id.pokemonImg);
@@ -1052,40 +1018,10 @@ public class MainActivity extends AppCompatActivity {
                 Enumeration<String> keys = modelToEdit.attacks.keys();
                 String key1 = keys.nextElement();
                 String str = modelToEdit.attacks.get(key1);
-                String[] split = str.split("\\|");
-                attack1Name.setText(key1);
-                if(split[0].isEmpty()){
-                    attack1Power.setText("0");
-                    //attack1Power.setVisibility(View.GONE);
-                }
-                else{
-                    attack1Power.setText(split[0]);
-                }
-                if(split.length < 2){
-                    attack1Desc.setText("");
-                    //attack1Desc.setVisibility(View.GONE);
-                }
-                else{
-                    if(split[1].isEmpty()){
-                        attack1Desc.setText("");
-                        //attack1Desc.setVisibility(View.GONE);
-                    }
-                    else{
-                        attack1Desc.setText(split[1]);
-                    }
-                }
-                /*attack2.setVisibility(View.GONE);
-                attack3.setVisibility(View.GONE);
-                attack4.setVisibility(View.GONE);*/
-            }
-            else{
-                if(nbAttacks == 2){
-                    //on process l'attaque 1
-                    Enumeration<String> keys = modelToEdit.attacks.keys();
-                    String key = keys.nextElement();
-                    String str = modelToEdit.attacks.get(key);
-                    String[] split = str.split("\\|");
-                    attack1Name.setText(key);
+                String[] split;
+                if(!Objects.equals(str,"|")){
+                    split = str.split("\\|");
+                    attack1Name.setText(key1);
                     if(split[0].isEmpty()){
                         attack1Power.setText("0");
                         //attack1Power.setVisibility(View.GONE);
@@ -1106,33 +1042,74 @@ public class MainActivity extends AppCompatActivity {
                             attack1Desc.setText(split[1]);
                         }
                     }
+                }
+
+                /*attack2.setVisibility(View.GONE);
+                attack3.setVisibility(View.GONE);
+                attack4.setVisibility(View.GONE);*/
+            }
+            else{
+                if(nbAttacks == 2){
+                    //on process l'attaque 1
+                    Enumeration<String> keys = modelToEdit.attacks.keys();
+                    String key = keys.nextElement();
+                    String str = modelToEdit.attacks.get(key);
+                    String[] split;
+                    if(!Objects.equals(str,"|")){
+                        split = str.split("\\|");
+                        attack1Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack1Power.setText("0");
+                            //attack1Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack1Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
+                            attack1Desc.setText("");
+                            //attack1Desc.setVisibility(View.GONE);
+                        }
+                        else{
+                            if(split[1].isEmpty()){
+                                attack1Desc.setText("");
+                                //attack1Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Desc.setText(split[1]);
+                            }
+                        }
+                    }
+
 
 
                     //on process l'attaque 2
                     key = keys.nextElement();
                     str = modelToEdit.attacks.get(key);
-                    split = str.split("\\|");
+                    if(!Objects.equals(str,"|")){
+                        split = str.split("\\|");
 
-                    attack2Name.setText(key);
-                    if(split[0].isEmpty()){
-                        attack2Power.setText("0");
-                        //attack2Power.setVisibility(View.GONE);
-                    }
-                    else{
-                        attack2Power.setText(split[0]);
-                    }
-                    if(split.length < 2){
-                        attack2Desc.setText("");
-                        //attack2Desc.setVisibility(View.GONE);
-                    }
-                    else{
-                        if(split[1].isEmpty()){
+                        attack2Name.setText(key);
+                        if(split[0].isEmpty()){
+                            attack2Power.setText("0");
+                            //attack2Power.setVisibility(View.GONE);
+                        }
+                        else{
+                            attack2Power.setText(split[0]);
+                        }
+                        if(split.length < 2){
                             attack2Desc.setText("");
                             //attack2Desc.setVisibility(View.GONE);
                         }
                         else{
-                            attack2Desc.setText(split[1]);
+                            if(split[1].isEmpty()){
+                                attack2Desc.setText("");
+                                //attack2Desc.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack2Desc.setText(split[1]);
+                            }
                         }
+
                     }
 
                     //attack3.setVisibility(View.GONE);
@@ -1144,193 +1121,214 @@ public class MainActivity extends AppCompatActivity {
                         Enumeration<String> keys = modelToEdit.attacks.keys();
                         String key = keys.nextElement();
                         String str = modelToEdit.attacks.get(key);
-                        String[] split = str.split("\\|");
-                        attack1Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack1Power.setText("0");
-                            //attack1Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack1Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack1Desc.setText("");
-                            //attack1Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                        String[] split;
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
+                            attack1Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack1Power.setText("0");
+                                //attack1Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack1Desc.setText("");
                                 //attack1Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack1Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack1Desc.setText("");
+                                    //attack1Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack1Desc.setText(split[1]);
+                                }
                             }
                         }
+
 
 
                         //on process l'attaque 2
                         key = keys.nextElement();
                         str = modelToEdit.attacks.get(key);
-                        split = str.split("\\|");
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
 
-                        attack2Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack2Power.setText("0");
-                            //attack2Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack2Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack2Desc.setText("");
-                            //attack2Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                            attack2Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack2Power.setText("0");
+                                //attack2Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack2Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack2Desc.setText("");
                                 //attack2Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack2Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack2Desc.setText("");
+                                    //attack2Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack2Desc.setText(split[1]);
+                                }
                             }
                         }
+
 
                         //on process l'attaque 3
                         key = keys.nextElement();
                         str = modelToEdit.attacks.get(key);
-                        split = str.split("\\|");
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
 
-                        attack3Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack3Power.setText("0");
-                            //attack3Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack3Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack3Desc.setText("");
-                            //attack3Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                            attack3Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack3Power.setText("0");
+                                //attack3Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack3Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack3Desc.setText("");
                                 //attack3Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack3Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack3Desc.setText("");
+                                    //attack3Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack3Desc.setText(split[1]);
+                                }
                             }
                         }
+
                         //attack4.setVisibility(View.GONE);
                     }
                     else{
                         //on process l'attaque 1
                         Enumeration<String> keys = modelToEdit.attacks.keys();
                         String key = keys.nextElement();
+                        String[] split;
                         String str = modelToEdit.attacks.get(key);
-                        String[] split = str.split("\\|");
-                        attack1Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack1Power.setText("0");
-                            //attack1Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack1Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack1Desc.setText("");
-                            //attack1Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
+                            attack1Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack1Power.setText("0");
+                                //attack1Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack1Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack1Desc.setText("");
                                 //attack1Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack1Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack1Desc.setText("");
+                                    //attack1Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack1Desc.setText(split[1]);
+                                }
                             }
                         }
-
 
                         //on process l'attaque 2
                         key = keys.nextElement();
                         str = modelToEdit.attacks.get(key);
-                        split = str.split("\\|");
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
 
-                        attack2Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack2Power.setText("0");
-                            //attack2Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack2Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack2Desc.setText("");
-                            //attack2Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                            attack2Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack2Power.setText("0");
+                                //attack2Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack2Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack2Desc.setText("");
                                 //attack2Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack2Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack2Desc.setText("");
+                                    //attack2Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack2Desc.setText(split[1]);
+                                }
                             }
                         }
+
 
                         //on process l'attaque 3
                         key = keys.nextElement();
                         str = modelToEdit.attacks.get(key);
-                        split = str.split("\\|");
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
 
-                        attack3Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack3Power.setText("0");
-                            //attack3Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack3Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack3Desc.setText("");
-                            //attack3Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                            attack3Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack3Power.setText("0");
+                                //attack3Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack3Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack3Desc.setText("");
                                 //attack3Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack3Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack3Desc.setText("");
+                                    //attack3Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack3Desc.setText(split[1]);
+                                }
                             }
                         }
+
                         //on process l'attaque 4
                         key = keys.nextElement();
                         str = modelToEdit.attacks.get(key);
-                        split = str.split("\\|");
+                        if(!Objects.equals(str,"|")){
+                            split = str.split("\\|");
 
-                        attack4Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack4Power.setText("0");
-                            //attack4Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack4Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack4Desc.setText("");
-                            //attack4Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
+                            attack4Name.setText(key);
+                            if(split[0].isEmpty()){
+                                attack4Power.setText("0");
+                                //attack4Power.setVisibility(View.GONE);
+                            }
+                            else{
+                                attack4Power.setText(split[0]);
+                            }
+                            if(split.length < 2){
                                 attack4Desc.setText("");
                                 //attack4Desc.setVisibility(View.GONE);
                             }
                             else{
-                                attack4Desc.setText(split[1]);
+                                if(split[1].isEmpty()){
+                                    attack4Desc.setText("");
+                                    //attack4Desc.setVisibility(View.GONE);
+                                }
+                                else{
+                                    attack4Desc.setText(split[1]);
+                                }
                             }
                         }
+
 
                     }
                 }
@@ -1342,7 +1340,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //on fait la sauvegarde des données
-                //modelToEdit.setId(carteModel.hashCode());
+
+                //modelToEdit.idDeck = "";
+                //modelToEdit.idUtilisateur = "";
+
                 modelToEdit.setNumero(numberEdit.getText().toString());
                 modelToEdit.setNom(nameEdit.getText().toString());
                 modelToEdit.setType(typeSpinner.getSelectedItem().toString());
@@ -1371,7 +1372,13 @@ public class MainActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        cbd.carteDao().addCarte(modelToEdit);
+                        try{
+                            cbd.carteDao().addCarte(modelToEdit);
+                        }
+                        catch(Exception e){
+                            System.out.println(e);
+                        }
+
                     }
                 }).start();
 
@@ -1386,14 +1393,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        // dismiss the popup window when touched
-               /* popupView.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        popupWindow.dismiss();
-                        return true;
-                    }
-                });*/
+
     }
     public Bitmap rotateBitmap(Bitmap original, float degrees) {
         int width = original.getWidth();

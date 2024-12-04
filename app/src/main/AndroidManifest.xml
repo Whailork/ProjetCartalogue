@@ -28,6 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Cartalogue"/>
+        <activity android:name=".LoginPage"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
