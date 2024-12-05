@@ -492,6 +492,9 @@ public class MainActivity extends AppCompatActivity {
                             attackName = attackDescription;
                             attackDescription = attackStrings.get(i);
                         }
+                        else{
+                            attackName = attackStrings.get(i);
+                        }
                     }
                     //si l'attaque à du damage, mais qu'il n'y a que deux strings, ça veut dire qu'il n'y a pas de description
                     //donc la description c'est le nom de l'attaque
@@ -971,7 +974,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(split.length > 2){
-            attack1Desc.setText(split[1]);
+            attack1Desc.setText(split[2]);
 
         }
 
