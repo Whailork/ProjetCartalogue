@@ -63,8 +63,17 @@ public class CarteModel implements Parcelable {
     @ColumnInfo (name = "imgBitMap")
     Bitmap imgBitmap;
 
-    @ColumnInfo (name = "attacks")
-    public Hashtable<String,String> attacks;
+    @ColumnInfo (name = "attack1")
+    public String attack1;
+
+    @ColumnInfo (name = "attack2")
+    public String attack2;
+
+    @ColumnInfo (name = "attack3")
+    public String attack3;
+
+    @ColumnInfo (name = "attack4")
+    public String attack4;
 
     @ColumnInfo (name = "description")
     String description;
@@ -74,7 +83,7 @@ public class CarteModel implements Parcelable {
         this.type = type;
         this.nom = nom;
         this.numero = numero;
-        attacks = new Hashtable<>();
+
     }
     public CarteModel(){
         id = UUID.randomUUID().hashCode();
@@ -83,7 +92,10 @@ public class CarteModel implements Parcelable {
         type = "";
         nom = "";
         numero = "";
-        attacks = new Hashtable<>();
+        attack1 = "";
+        attack2 = "";
+        attack3 = "";
+        attack4 = "";
     }
 
     protected CarteModel(Parcel in) {
@@ -255,7 +267,7 @@ public class CarteModel implements Parcelable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CarteModel that = (CarteModel) o;
-        return id == that.id && imageId == that.imageId && alolan == that.alolan && pv == that.pv && Objects.equals(numero, that.numero) && Objects.equals(nom, that.nom) && Objects.equals(type, that.type) && Objects.equals(stage, that.stage) && Objects.equals(evolvesFrom, that.evolvesFrom) && Objects.equals(pokemonType, that.pokemonType) && Objects.equals(height, that.height) && Objects.equals(weight, that.weight) && Objects.equals(imgBitmap, that.imgBitmap) && Objects.equals(attacks, that.attacks) && Objects.equals(description, that.description);
+        return id == that.id && imageId == that.imageId && alolan == that.alolan && pv == that.pv && Objects.equals(numero, that.numero) && Objects.equals(nom, that.nom) && Objects.equals(type, that.type) && Objects.equals(stage, that.stage) && Objects.equals(evolvesFrom, that.evolvesFrom) && Objects.equals(pokemonType, that.pokemonType) && Objects.equals(height, that.height) && Objects.equals(weight, that.weight) && Objects.equals(imgBitmap, that.imgBitmap) && Objects.equals(description, that.description);
     }
 
 }

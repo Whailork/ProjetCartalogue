@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -71,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
     Button btnCamera;
     Bitmap imgBitmap;
     String currentPhotoPath;
-    ArrayList<Text.TextBlock> inReadingOrder;
+    ArrayList<Text.TextBlock> sortHolder;
+    ArrayList<OCRDataBlock> inReadingOrder;
     private static final int REQUEST_CAMERA_CODE = 100;
     private static final int REQUEST_IMAGES_CODE = 110;
     private static final int REQUEST_WRITE_STORAGE_CODE = 120;
@@ -342,97 +344,98 @@ public class MainActivity extends AppCompatActivity {
                 newCarteModel.type = matchingType.name();
 
                 List<Text.TextBlock> result = task.getResult().getTextBlocks();
-                inReadingOrder = new ArrayList<Text.TextBlock>();
-                ArrayList<String> strInReadingOrder = new ArrayList<>();
+                sortHolder = new ArrayList<Text.TextBlock>();
+                inReadingOrder = new ArrayList<>();
+
 
                 // on trie les textblocks en ordre de lecture
                 for (int x = 0; x < result.size(); x++) {
-                    if (inReadingOrder.isEmpty()) {
-                        inReadingOrder.add(result.get(x));
+                    if (sortHolder.isEmpty()) {
+                        sortHolder.add(result.get(x));
                     } else {
-                        for (int y = 0; y < inReadingOrder.size(); y++) {
-                            if (result.get(x).getBoundingBox().left < inReadingOrder.get(y).getBoundingBox().left) {
-                                inReadingOrder.add(y, result.get(x));
+                        for (int y = 0; y < sortHolder.size(); y++) {
+                            if (result.get(x).getBoundingBox().left < sortHolder.get(y).getBoundingBox().left) {
+                                sortHolder.add(y, result.get(x));
                                 break;
                             }
 
                         }
-                        if (!inReadingOrder.contains(result.get(x))) {
-                            inReadingOrder.add(result.get(x));
+                        if (!sortHolder.contains(result.get(x))) {
+                            sortHolder.add(result.get(x));
                         }
                     }
                 }
-                for (Text.TextBlock t : inReadingOrder) {
-                    strInReadingOrder.add(t.getText());
+                for (Text.TextBlock textBlock:sortHolder) {
+                    inReadingOrder.add(new OCRDataBlock(textBlock.getText(),textBlock.getBoundingBox()));
                 }
+
                 //TOP--------------------------------------------------------------------------------
                 //check pour l'evolution(basic ou stage1/stage2) ou mega
-                String evolutionText = ScanForEvolution(strInReadingOrder);
+                String evolutionText = ScanForEvolution();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 //ensuite on check si alolan
-                boolean isAlolan = ScanForAlolan(strInReadingOrder);
+                boolean isAlolan = ScanForAlolan();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 // si c'est pas une base on check evolves from
-                String strEvolvesFrom = ScanForEvolvesFrom(strInReadingOrder);
+                String strEvolvesFrom = ScanForEvolvesFrom();
                 // on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 // on get les pv
-                String strPv = ScanForPV(strInReadingOrder);
+                String strPv = ScanForPV();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 //MIDDLE------------------------------------------------------------------------------------
                 // get le numero
-                String strNO = ScanForNumber(strInReadingOrder);
+                String strNO = ScanForNumber();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 // get le height
-                String strHeight = ScanForHeight(strInReadingOrder);
+                String strHeight = ScanForHeight();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 // get le weigth
-                String strWeight = ScanForWeight(strInReadingOrder);
+                String strWeight = ScanForWeight();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 // get le pokemon type
-                String strPokeType = ScanForPokemonType(strInReadingOrder);
+                String strPokeType = ScanForPokemonType();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 //on récupere le nom qui devrait être le premier qui n'as pas de chiffre
                 int index = 0;
-                for (int i = 0; i < strInReadingOrder.size(); i++) {
-                    if (!strInReadingOrder.get(i).matches(".*\\d.*")) {
+                for (int i = 0; i < inReadingOrder.size(); i++) {
+                    if (!inReadingOrder.get(i).text.matches(".*\\d.*")) {
                         index = i;
                         break;
                     }
                 }
-                String strNom = strInReadingOrder.get(index);
-                strInReadingOrder.remove(index);
+                String strNom = inReadingOrder.get(index).text;
                 inReadingOrder.remove(index);
 
                 //BOTTOM------------------------------------------------------
                 //weakness
-                String strWeakness = ScanForWeakness(strInReadingOrder);
+                String strWeakness = ScanForWeakness();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
                 //resistance
-                String strResistance = ScanForResistance(strInReadingOrder);
+                String strResistance = ScanForResistance();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
                 //retreat
-                String strRetreat = ScanForRetreat(strInReadingOrder);
+                String strRetreat = ScanForRetreat();
                 //on clean les textBlocks qui sont vides
-                strInReadingOrder = removeEmpty(strInReadingOrder);
+                inReadingOrder = removeEmpty(inReadingOrder);
 
 
                 //on cherche pour les attaques
@@ -440,41 +443,39 @@ public class MainActivity extends AppCompatActivity {
                 String attackPower = "";
                 String attackName = "";
                 String attackDescription = "";
-                int startIndex =-1;
-                int endIndex =-1;
-                ArrayList<Text.TextBlock> middleBlocks = new ArrayList<>();
+                // on ramasse tous les blocks qui sont au milieu
+                ArrayList<OCRDataBlock> middleBlocks = new ArrayList<>();
                 ArrayList<String> attackStrings = new ArrayList<>();
                 for(int i = 0; i < inReadingOrder.size();i++){
-                    int boxLeft = inReadingOrder.get(i).getBoundingBox().left;
+                    int boxLeft = inReadingOrder.get(i).bounds.left;
                     if(boxLeft > middleLeft + 50 && boxLeft < bottomLeft-50){
-                        if(startIndex ==-1){
-                            startIndex = i;
-                        }
                         middleBlocks.add(inReadingOrder.get(i));
-                        endIndex = i;
                     }
                 }
-                while(!middleBlocks.isEmpty()){
+                // on prends les blocks qui sont très proche horizontalement (sur la même ligne donc même attaque)
+                for(int x = 0; x < 4; x++){
+                    if(middleBlocks.isEmpty()){
+                        break;
+                    }
                     attackStrings.clear();
                     attackPower = "";
                     attackName = "";
                     attackDescription = "";
                     ArrayList<Integer> indexes = new ArrayList<>();
-                    int left = middleBlocks.get(0).getBoundingBox().left;
+                    int left = middleBlocks.get(0).bounds.left;
                     for(int i = middleBlocks.size() -1; i >= 0 ;i--){
-                        int boxLeft = middleBlocks.get(i).getBoundingBox().left;
+                        int boxLeft = middleBlocks.get(i).bounds.left;
                         if(boxLeft < left + 100 && boxLeft > left - 100){
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i,"");
-                            attackStrings.add(middleBlocks.get(i).getText());
+                            attackStrings.add(middleBlocks.get(i).text);
+                            inReadingOrder.get(i).text = "";
                             indexes.add(i);
                         }
                     }
                     for (int i = indexes.size() -1; i>= 0;i--) {
                         middleBlocks.remove((int)indexes.get(i));
-                        endIndex--;
                     }
                     indexes.clear();
+                    // on regarde c'est lequel le nom, la description ou la puissance
                     for(int i = 0; i < attackStrings.size();i++){
                         if(attackStrings.get(i).matches(".*\\d.*") && attackStrings.get(i).length() < 4){
                             attackPower = attackStrings.get(i);
@@ -491,26 +492,32 @@ public class MainActivity extends AppCompatActivity {
                         attackName = attackDescription;
                         attackDescription = "";
                     }
-                    newCarteModel.attacks.put(attackName,attackPower+"|"+attackDescription);
+                    switch (x){
+                        case 0 : newCarteModel.attack1 = attackName+"|"+attackPower+"|"+attackDescription; break;
+                        case 1 : newCarteModel.attack2 = attackName+"|"+attackPower+"|"+attackDescription; break;
+                        case 2 : newCarteModel.attack3 = attackName+"|"+attackPower+"|"+attackDescription; break;
+                        case 3 : newCarteModel.attack4 = attackName+"|"+attackPower+"|"+attackDescription; break;
+                    }
+
 
                     //on clean les textBlocks qui sont vides
-                    strInReadingOrder = removeEmpty(strInReadingOrder);
+                    inReadingOrder = removeEmpty(inReadingOrder);
                 }
 
                 //on fetch la description
                 String strDescription =strPokeType + ": \n";
                 int longestIndex = -1;
                 int longestCharNumber = -1;
-                for(int x = 0; x< strInReadingOrder.size(); x++){
+                for(int x = 0; x< inReadingOrder.size(); x++){
 
-                    if(strInReadingOrder.get(x).length() > longestCharNumber){
+                    if(inReadingOrder.get(x).text.length() > longestCharNumber){
                         longestIndex = x;
-                        longestCharNumber = strInReadingOrder.get(x).length();
+                        longestCharNumber = inReadingOrder.get(x).text.length();
                     }
                 }
                 if(longestIndex > -1){
-                    strDescription = strDescription + strInReadingOrder.get(longestIndex);
-                    strInReadingOrder.remove(longestIndex);
+                    strDescription = strDescription + inReadingOrder.get(longestIndex).text;
+                    inReadingOrder.remove(longestIndex);
                 }
 
                 //création de la carte à partir des infos récupérés
@@ -525,7 +532,6 @@ public class MainActivity extends AppCompatActivity {
                     String strNumber = strPv.substring(mDigits.start(),mDigits.end());
                     newCarteModel.setPv(Integer.parseInt(strNumber));
                 };
-                //process la string de numero
                 newCarteModel.setNumero(strNO);
                 newCarteModel.setPokemonType(strPokeType);
                 newCarteModel.setHeight(strHeight);
@@ -563,80 +569,69 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    ArrayList<String> removeEmpty(ArrayList<String> inArray) {
-        ArrayList<String> newStrArray = new ArrayList<>();
+    ArrayList<OCRDataBlock> removeEmpty(ArrayList<OCRDataBlock> inArray) {
+        ArrayList<OCRDataBlock> newStrArray = new ArrayList<>();
         for (int i = inArray.size() -1; i >= 0; i--) {
-            String trimmedText = inArray.get(i).trim();
+            String trimmedText = inArray.get(i).text.trim();
             String withoutSpecialChars =trimmedText.replaceAll("\\W","");
             if (!withoutSpecialChars.isEmpty()) {
                 newStrArray.add(0,inArray.get(i));
-            } else {
-                inReadingOrder.remove(i);
-
             }
         }
         return newStrArray;
     }
 
-    String ScanForEvolution(ArrayList<String> strInReadingOrder){
+    String ScanForEvolution(){
         String evolutionText = "";
         Matcher mBasicFR;
         Matcher mBasicEN;
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
+        for (int i = 0; i < inReadingOrder.size(); i++) {
 
-            mBasicFR = basicFR.matcher(strInReadingOrder.get(i));
-            mBasicEN = basicEn.matcher(strInReadingOrder.get(i));
+            mBasicFR = basicFR.matcher(inReadingOrder.get(i).text);
+            mBasicEN = basicEn.matcher(inReadingOrder.get(i).text);
             if(mBasicFR.find()){
-                evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(),mBasicFR.end());
-                String newString = strInReadingOrder.get(i).replace(evolutionText,"");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                evolutionText = inReadingOrder.get(i).text.substring(mBasicFR.start(),mBasicFR.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
                 break;
 
             } else {
                 if (mBasicEN.find()) {
-                    evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                    String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    evolutionText = inReadingOrder.get(i).text.substring(mBasicEN.start(), mBasicEN.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
                     break;
                 } else {
                     // c'est un pokemon deja evolue
-                    mBasicFR = stageFR.matcher(strInReadingOrder.get(i));
-                    mBasicEN = stageEN.matcher(strInReadingOrder.get(i));
+                    mBasicFR = stageFR.matcher(inReadingOrder.get(i).text);
+                    mBasicEN = stageEN.matcher(inReadingOrder.get(i).text);
                     if(mBasicFR.find()){
                         evolvesFrom = true;
-                        evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
-                        String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                        strInReadingOrder.remove(i);
-                        strInReadingOrder.add(i, newString);
+                        evolutionText = inReadingOrder.get(i).text.substring(mBasicFR.start(), mBasicFR.end());
+                        inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
+
                         break;
                     } else {
                         if (mBasicEN.find()) {
                             evolvesFrom = true;
-                            evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                            String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                            strInReadingOrder.remove(i);
-                            strInReadingOrder.add(i, newString);
+                            evolutionText = inReadingOrder.get(i).text.substring(mBasicEN.start(), mBasicEN.end());
+                            inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
+
                             break;
                         } else {
                             //c'est une mega evolution
-                            mBasicFR = megaFR.matcher(strInReadingOrder.get(i));
-                            mBasicEN = megaEN.matcher(strInReadingOrder.get(i));
+                            mBasicFR = megaFR.matcher(inReadingOrder.get(i).text);
+                            mBasicEN = megaEN.matcher(inReadingOrder.get(i).text);
                             if(mBasicFR.find()){
                                 evolvesFrom = true;
-                                evolutionText = strInReadingOrder.get(i).substring(mBasicFR.start(), mBasicFR.end());
-                                String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                strInReadingOrder.remove(i);
-                                strInReadingOrder.add(i, newString);
+                                evolutionText = inReadingOrder.get(i).text.substring(mBasicFR.start(), mBasicFR.end());
+                                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
+
                                 break;
                             } else {
                                 if (mBasicEN.find()) {
                                     evolvesFrom = true;
-                                    evolutionText = strInReadingOrder.get(i).substring(mBasicEN.start(), mBasicEN.end());
-                                    String newString = strInReadingOrder.get(i).replace(evolutionText, "");
-                                    strInReadingOrder.remove(i);
-                                    strInReadingOrder.add(i, newString);
+                                    evolutionText = inReadingOrder.get(i).text.substring(mBasicEN.start(), mBasicEN.end());
+                                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(evolutionText,"");
+
                                     break;
                                 }
                             }
@@ -647,117 +642,94 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-        //on clean les textblocks qui sont vides
-        strInReadingOrder = removeEmpty(strInReadingOrder);
         return evolutionText;
     }
-    boolean ScanForAlolan(ArrayList<String> strInReadingOrder){
+    boolean ScanForAlolan(){
         Matcher mAlolan;
         boolean isAlolan = false;
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
+        for (int i = 0; i < inReadingOrder.size(); i++) {
 
-            mAlolan = alolanFR.matcher(strInReadingOrder.get(i));
+            mAlolan = alolanFR.matcher(inReadingOrder.get(i).text);
             if (mAlolan.find()) {
                 isAlolan = true;
-                String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
-                String newString = strInReadingOrder.get(i).replace(toRemove, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                String toRemove = inReadingOrder.get(i).text.substring(mAlolan.start(), mAlolan.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(toRemove, "");
                 break;
             } else {
-                mAlolan = alolanEN.matcher(strInReadingOrder.get(i));
+                mAlolan = alolanEN.matcher(inReadingOrder.get(i).text);
                 if (mAlolan.find()) {
                     isAlolan = true;
-                    String toRemove = strInReadingOrder.get(i).substring(mAlolan.start(), mAlolan.end());
-                    String newString = strInReadingOrder.get(i).replace(toRemove, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    String toRemove = inReadingOrder.get(i).text.substring(mAlolan.start(), mAlolan.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(toRemove, "");
                     break;
                 }
             }
-
         }
-        // on clean les textblocks qui sont vides
         return isAlolan;
     }
-    String ScanForEvolvesFrom(ArrayList<String> strInReadingOrder){
+    String ScanForEvolvesFrom(){
         String strEvolvesFrom = "";
         Matcher mEvolvesFrom;
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
+        for (int i = 0; i < inReadingOrder.size(); i++) {
 
-            mEvolvesFrom = evolvesFromFR.matcher(strInReadingOrder.get(i));
+            mEvolvesFrom = evolvesFromFR.matcher(inReadingOrder.get(i).text);
             if (mEvolvesFrom.find()) {
-                strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
-                String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                strEvolvesFrom = inReadingOrder.get(i).text.substring(mEvolvesFrom.start(), mEvolvesFrom.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strEvolvesFrom, "");
                 break;
             } else {
-                mEvolvesFrom = evolvesFromEN.matcher(strInReadingOrder.get(i));
+                mEvolvesFrom = evolvesFromEN.matcher(inReadingOrder.get(i).text);
                 if (mEvolvesFrom.find()) {
-                    strEvolvesFrom = strInReadingOrder.get(i).substring(mEvolvesFrom.start(), mEvolvesFrom.end());
-                    String newString = strInReadingOrder.get(i).replace(strEvolvesFrom, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    strEvolvesFrom = inReadingOrder.get(i).text.substring(mEvolvesFrom.start(), mEvolvesFrom.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strEvolvesFrom, "");
                     break;
                 }
             }
 
         }
-
-
         return strEvolvesFrom;
     }
-    String ScanForPV(ArrayList<String> strInReadingOrder){
+    String ScanForPV(){
         Matcher mPv;
         String strPv = "";
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
+        for (int i = 0; i < inReadingOrder.size(); i++) {
 
-            mPv = pvFR.matcher(strInReadingOrder.get(i));
+            mPv = pvFR.matcher(inReadingOrder.get(i).text);
             if (mPv.find()) {
-                strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
-                String newString = strInReadingOrder.get(i).replace(strPv, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                strPv = inReadingOrder.get(i).text.substring(mPv.start(), mPv.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strPv, "");
                 break;
             } else {
-                mPv = pvEN.matcher(strInReadingOrder.get(i));
+                mPv = pvEN.matcher(inReadingOrder.get(i).text);
                 if (mPv.find()) {
-                    strPv = strInReadingOrder.get(i).substring(mPv.start(), mPv.end());
-                    String newString = strInReadingOrder.get(i).replace(strPv, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    strPv = inReadingOrder.get(i).text.substring(mPv.start(), mPv.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strPv, "");
                     break;
                 }
             }
-
-
         }
-
         return strPv;
     }
-    String ScanForNumber(ArrayList<String> strInReadingOrder){
+    String ScanForNumber(){
         Matcher mNO;
         String strNO = "";
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
-            mNO = numberFR.matcher(strInReadingOrder.get(i));
+        for (int i = 0; i < inReadingOrder.size(); i++) {
+            mNO = numberFR.matcher(inReadingOrder.get(i).text);
             if(mNO.find()){
-                middleLeft = inReadingOrder.get(i).getBoundingBox().left;
-                strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
-                String newString = strInReadingOrder.get(i).replace(strNO,"");
+                middleLeft = inReadingOrder.get(i).bounds.left;
+                strNO = inReadingOrder.get(i).text.substring(mNO.start(),mNO.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strNO,"");
                 strNO = strNO.substring(mNO.end() -3, mNO.end());
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+
                 break;
             } else {
-                mNO = numberEN.matcher(strInReadingOrder.get(i));
+                mNO = numberEN.matcher(inReadingOrder.get(i).text);
                 if(mNO.find()){
-                    middleLeft = inReadingOrder.get(i).getBoundingBox().left;
-                    strNO = strInReadingOrder.get(i).substring(mNO.start(),mNO.end());
-                    String newString = strInReadingOrder.get(i).replace(strNO,"");
+                    middleLeft = inReadingOrder.get(i).bounds.left;
+                    strNO = inReadingOrder.get(i).text.substring(mNO.start(),mNO.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strNO,"");
                     strNO = strNO.substring(mNO.end() -3, mNO.end());
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+
                     break;
                 }
             }
@@ -765,25 +737,21 @@ public class MainActivity extends AppCompatActivity {
         }
         return strNO;
     }
-    String ScanForPokemonType(ArrayList<String> strInReadingOrder){
+    String ScanForPokemonType(){
         Matcher mPokeType;
         String strPokeType = "";
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
+        for (int i = 0; i < inReadingOrder.size(); i++) {
 
-            mPokeType = pokemonTypeFR.matcher(strInReadingOrder.get(i));
+            mPokeType = pokemonTypeFR.matcher(inReadingOrder.get(i).text);
             if (mPokeType.find()) {
-                strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
-                String newString = strInReadingOrder.get(i).replace(strPokeType, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                strPokeType = inReadingOrder.get(i).text.substring(mPokeType.start(), mPokeType.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strPokeType, "");
                 break;
             } else {
-                mPokeType = pokemonTypeEN.matcher(strInReadingOrder.get(i));
+                mPokeType = pokemonTypeEN.matcher(inReadingOrder.get(i).text);
                 if (mPokeType.find()) {
-                    strPokeType = strInReadingOrder.get(i).substring(mPokeType.start(), mPokeType.end());
-                    String newString = strInReadingOrder.get(i).replace(strPokeType, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    strPokeType = inReadingOrder.get(i).text.substring(mPokeType.start(), mPokeType.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strPokeType, "");
                     break;
                 }
             }
@@ -791,24 +759,20 @@ public class MainActivity extends AppCompatActivity {
         }
         return strPokeType;
     }
-    String ScanForHeight(ArrayList<String> strInReadingOrder){
+    String ScanForHeight(){
         Matcher mHeight;
         String strHeight = "";
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
-            mHeight = heightFR.matcher(strInReadingOrder.get(i));
+        for (int i = 0; i < inReadingOrder.size(); i++) {
+            mHeight = heightFR.matcher(inReadingOrder.get(i).text);
             if (mHeight.find()) {
-                strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
-                String newString = strInReadingOrder.get(i).replace(strHeight, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                strHeight = inReadingOrder.get(i).text.substring(mHeight.start(), mHeight.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strHeight, "");
                 break;
             } else {
-                mHeight = heightEN.matcher(strInReadingOrder.get(i));
+                mHeight = heightEN.matcher(inReadingOrder.get(i).text);
                 if (mHeight.find()) {
-                    strHeight = strInReadingOrder.get(i).substring(mHeight.start(), mHeight.end());
-                    String newString = strInReadingOrder.get(i).replace(strHeight, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    strHeight = inReadingOrder.get(i).text.substring(mHeight.start(), mHeight.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strHeight, "");
                     break;
                 }
             }
@@ -816,24 +780,20 @@ public class MainActivity extends AppCompatActivity {
         }
         return strHeight;
     }
-    String ScanForWeight(ArrayList<String> strInReadingOrder){
+    String ScanForWeight(){
         Matcher mWeight;
         String strWeight = "";
-        for (int i = 0; i < strInReadingOrder.size(); i++) {
-            mWeight = weightFR.matcher(strInReadingOrder.get(i));
+        for (int i = 0; i < inReadingOrder.size(); i++) {
+            mWeight = weightFR.matcher(inReadingOrder.get(i).text);
             if (mWeight.find()) {
-                strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
-                String newString = strInReadingOrder.get(i).replace(strWeight, "");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                strWeight = inReadingOrder.get(i).text.substring(mWeight.start(), mWeight.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strWeight, "");
                 break;
             } else {
-                mWeight = weightEN.matcher(strInReadingOrder.get(i));
+                mWeight = weightEN.matcher(inReadingOrder.get(i).text);
                 if (mWeight.find()) {
-                    strWeight = strInReadingOrder.get(i).substring(mWeight.start(), mWeight.end());
-                    String newString = strInReadingOrder.get(i).replace(strWeight, "");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    strWeight = inReadingOrder.get(i).text.substring(mWeight.start(), mWeight.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strWeight, "");
                     break;
                 }
             }
@@ -841,26 +801,22 @@ public class MainActivity extends AppCompatActivity {
         }
         return strWeight;
     }
-    String ScanForWeakness(ArrayList<String> strInReadingOrder){
+    String ScanForWeakness(){
         Matcher mWeakness;
         String strWeakness = "";
-        for(int i = 0; i < strInReadingOrder.size(); i++){
-            mWeakness = weaknessFR.matcher(strInReadingOrder.get(i));
+        for(int i = 0; i < inReadingOrder.size(); i++){
+            mWeakness = weaknessFR.matcher(inReadingOrder.get(i).text);
             if(mWeakness.find()){
-                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
-                String newString = strInReadingOrder.get(i).replace(strWeakness,"");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                bottomLeft = inReadingOrder.get(i).bounds.left;
+                strWeakness = inReadingOrder.get(i).text.substring(mWeakness.start(),mWeakness.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strWeakness,"");
                 break;
             } else {
-                mWeakness = weaknessEN.matcher(strInReadingOrder.get(i));
+                mWeakness = weaknessEN.matcher(inReadingOrder.get(i).text);
                 if(mWeakness.find()){
-                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                    strWeakness = strInReadingOrder.get(i).substring(mWeakness.start(),mWeakness.end());
-                    String newString = strInReadingOrder.get(i).replace(strWeakness,"");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    bottomLeft = inReadingOrder.get(i).bounds.left;
+                    strWeakness = inReadingOrder.get(i).text.substring(mWeakness.start(),mWeakness.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strWeakness,"");
                     break;
                 }
             }
@@ -868,26 +824,22 @@ public class MainActivity extends AppCompatActivity {
         }
         return strWeakness;
     }
-    String ScanForResistance(ArrayList<String> strInReadingOrder){
+    String ScanForResistance(){
         Matcher mResistance;
         String strResistance = "";
-        for(int i = 0; i < strInReadingOrder.size(); i++){
-            mResistance = resistanceFR.matcher(strInReadingOrder.get(i));
+        for(int i = 0; i < inReadingOrder.size(); i++){
+            mResistance = resistanceFR.matcher(inReadingOrder.get(i).text);
             if(mResistance.find()){
-                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
-                String newString = strInReadingOrder.get(i).replace(strResistance,"");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                bottomLeft = inReadingOrder.get(i).bounds.left;
+                strResistance = inReadingOrder.get(i).text.substring(mResistance.start(),mResistance.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strResistance,"");
                 break;
             } else {
-                mResistance = resistanceEN.matcher(strInReadingOrder.get(i));
+                mResistance = resistanceEN.matcher(inReadingOrder.get(i).text);
                 if(mResistance.find()){
-                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                    strResistance = strInReadingOrder.get(i).substring(mResistance.start(),mResistance.end());
-                    String newString = strInReadingOrder.get(i).replace(strResistance,"");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    bottomLeft = inReadingOrder.get(i).bounds.left;
+                    strResistance = inReadingOrder.get(i).text.substring(mResistance.start(),mResistance.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strResistance,"");
                     break;
                 }
             }
@@ -895,26 +847,22 @@ public class MainActivity extends AppCompatActivity {
         }
         return strResistance;
     }
-    String ScanForRetreat(ArrayList<String> strInReadingOrder){
+    String ScanForRetreat(){
         Matcher mRetreat;
         String strRetreat = "";
-        for(int i = 0; i < strInReadingOrder.size(); i++){
-            mRetreat = resistanceFR.matcher(strInReadingOrder.get(i));
+        for(int i = 0; i < inReadingOrder.size(); i++){
+            mRetreat = resistanceFR.matcher(inReadingOrder.get(i).text);
             if( mRetreat.find()){
-                bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                strRetreat = strInReadingOrder.get(i).substring( mRetreat.start(), mRetreat.end());
-                String newString = strInReadingOrder.get(i).replace(strRetreat,"");
-                strInReadingOrder.remove(i);
-                strInReadingOrder.add(i, newString);
+                bottomLeft = inReadingOrder.get(i).bounds.left;
+                strRetreat = inReadingOrder.get(i).text.substring( mRetreat.start(), mRetreat.end());
+                inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strRetreat,"");
                 break;
             } else {
-                mRetreat = resistanceEN.matcher(strInReadingOrder.get(i));
+                mRetreat = resistanceEN.matcher(inReadingOrder.get(i).text);
                 if( mRetreat.find()){
-                    bottomLeft = inReadingOrder.get(i).getBoundingBox().left;
-                    strRetreat = strInReadingOrder.get(i).substring( mRetreat.start(), mRetreat.end());
-                    String newString = strInReadingOrder.get(i).replace(strRetreat,"");
-                    strInReadingOrder.remove(i);
-                    strInReadingOrder.add(i, newString);
+                    bottomLeft = inReadingOrder.get(i).bounds.left;
+                    strRetreat = inReadingOrder.get(i).text.substring( mRetreat.start(), mRetreat.end());
+                    inReadingOrder.get(i).text = inReadingOrder.get(i).text.replace(strRetreat,"");
                     break;
                 }
             }
@@ -1004,336 +952,72 @@ public class MainActivity extends AppCompatActivity {
         heightEdit.setText(modelToEdit.getHeight());
         weightEdit.setText(modelToEdit.getWeight());
 
-        int nbAttacks = modelToEdit.attacks.size();
-        // on disable des éléments du layout selon le nombre d'attaques
-        if(nbAttacks == 0){
-            /*attack1.setVisibility(View.GONE);
-            attack2.setVisibility(View.GONE);
-            attack3.setVisibility(View.GONE);
-            attack4.setVisibility(View.GONE);*/
+
+        //on process l'attaque 1
+        String[] split;
+        split = modelToEdit.attack1.split("\\|");
+        if(split.length > 0){
+            attack1Name.setText(split[0]);
         }
-        else{
-            if(nbAttacks == 1){
-                //on process l'attaque 1
-                Enumeration<String> keys = modelToEdit.attacks.keys();
-                String key1 = keys.nextElement();
-                String str = modelToEdit.attacks.get(key1);
-                String[] split;
-                if(!Objects.equals(str,"|")){
-                    split = str.split("\\|");
-                    attack1Name.setText(key1);
-                    if(split[0].isEmpty()){
-                        attack1Power.setText("0");
-                        //attack1Power.setVisibility(View.GONE);
-                    }
-                    else{
-                        attack1Power.setText(split[0]);
-                    }
-                    if(split.length < 2){
-                        attack1Desc.setText("");
-                        //attack1Desc.setVisibility(View.GONE);
-                    }
-                    else{
-                        if(split[1].isEmpty()){
-                            attack1Desc.setText("");
-                            //attack1Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack1Desc.setText(split[1]);
-                        }
-                    }
-                }
-
-                /*attack2.setVisibility(View.GONE);
-                attack3.setVisibility(View.GONE);
-                attack4.setVisibility(View.GONE);*/
-            }
-            else{
-                if(nbAttacks == 2){
-                    //on process l'attaque 1
-                    Enumeration<String> keys = modelToEdit.attacks.keys();
-                    String key = keys.nextElement();
-                    String str = modelToEdit.attacks.get(key);
-                    String[] split;
-                    if(!Objects.equals(str,"|")){
-                        split = str.split("\\|");
-                        attack1Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack1Power.setText("0");
-                            //attack1Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack1Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack1Desc.setText("");
-                            //attack1Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
-                                attack1Desc.setText("");
-                                //attack1Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack1Desc.setText(split[1]);
-                            }
-                        }
-                    }
-
-
-
-                    //on process l'attaque 2
-                    key = keys.nextElement();
-                    str = modelToEdit.attacks.get(key);
-                    if(!Objects.equals(str,"|")){
-                        split = str.split("\\|");
-
-                        attack2Name.setText(key);
-                        if(split[0].isEmpty()){
-                            attack2Power.setText("0");
-                            //attack2Power.setVisibility(View.GONE);
-                        }
-                        else{
-                            attack2Power.setText(split[0]);
-                        }
-                        if(split.length < 2){
-                            attack2Desc.setText("");
-                            //attack2Desc.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(split[1].isEmpty()){
-                                attack2Desc.setText("");
-                                //attack2Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack2Desc.setText(split[1]);
-                            }
-                        }
-
-                    }
-
-                    //attack3.setVisibility(View.GONE);
-                    //attack4.setVisibility(View.GONE);
-                }
-                else{
-                    if(nbAttacks == 3){
-                        //on process l'attaque 1
-                        Enumeration<String> keys = modelToEdit.attacks.keys();
-                        String key = keys.nextElement();
-                        String str = modelToEdit.attacks.get(key);
-                        String[] split;
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-                            attack1Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack1Power.setText("0");
-                                //attack1Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack1Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack1Desc.setText("");
-                                //attack1Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack1Desc.setText("");
-                                    //attack1Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack1Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-
-
-                        //on process l'attaque 2
-                        key = keys.nextElement();
-                        str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-
-                            attack2Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack2Power.setText("0");
-                                //attack2Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack2Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack2Desc.setText("");
-                                //attack2Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack2Desc.setText("");
-                                    //attack2Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack2Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-
-                        //on process l'attaque 3
-                        key = keys.nextElement();
-                        str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-
-                            attack3Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack3Power.setText("0");
-                                //attack3Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack3Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack3Desc.setText("");
-                                //attack3Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack3Desc.setText("");
-                                    //attack3Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack3Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-                        //attack4.setVisibility(View.GONE);
-                    }
-                    else{
-                        //on process l'attaque 1
-                        Enumeration<String> keys = modelToEdit.attacks.keys();
-                        String key = keys.nextElement();
-                        String[] split;
-                        String str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-                            attack1Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack1Power.setText("0");
-                                //attack1Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack1Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack1Desc.setText("");
-                                //attack1Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack1Desc.setText("");
-                                    //attack1Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack1Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-                        //on process l'attaque 2
-                        key = keys.nextElement();
-                        str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-
-                            attack2Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack2Power.setText("0");
-                                //attack2Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack2Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack2Desc.setText("");
-                                //attack2Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack2Desc.setText("");
-                                    //attack2Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack2Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-
-                        //on process l'attaque 3
-                        key = keys.nextElement();
-                        str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-
-                            attack3Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack3Power.setText("0");
-                                //attack3Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack3Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack3Desc.setText("");
-                                //attack3Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack3Desc.setText("");
-                                    //attack3Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack3Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-                        //on process l'attaque 4
-                        key = keys.nextElement();
-                        str = modelToEdit.attacks.get(key);
-                        if(!Objects.equals(str,"|")){
-                            split = str.split("\\|");
-
-                            attack4Name.setText(key);
-                            if(split[0].isEmpty()){
-                                attack4Power.setText("0");
-                                //attack4Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack4Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack4Desc.setText("");
-                                //attack4Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack4Desc.setText("");
-                                    //attack4Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack4Desc.setText(split[1]);
-                                }
-                            }
-                        }
-
-
-                    }
-                }
-            }
+        if(split.length > 1){
+            attack1Power.setText(split[1]);
         }
+
+        if(split.length > 2){
+            attack1Desc.setText(split[1]);
+
+        }
+
+
+        //on process l'attaque 2
+        split = modelToEdit.attack2.split("\\|");
+
+        if(split.length > 0){
+            attack2Name.setText(split[0]);
+        }
+
+        if(split.length > 1){
+            attack2Power.setText(split[1]);
+        }
+
+        if(split.length > 2){
+            attack2Desc.setText(split[2]);
+
+        }
+
+        //on process l'attaque 3
+        split = modelToEdit.attack3.split("\\|");
+
+        if(split.length > 0){
+            attack3Name.setText(split[0]);
+        }
+
+        if(split.length > 1){
+            attack3Power.setText(split[1]);
+        }
+
+        if(split.length > 2){
+            attack3Desc.setText(split[2]);
+
+        }
+
+        //on process l'attaque 4
+        split = modelToEdit.attack4.split("\\|");
+
+        if(split.length > 0){
+            attack4Name.setText(split[0]);
+        }
+
+        if(split.length > 1){
+            attack4Power.setText(split[1]);
+        }
+
+        if(split.length > 2){
+            attack4Desc.setText(split[2]);
+
+        }
+
+
         descriptionEdit.setText(modelToEdit.getDescription());
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -1356,18 +1040,14 @@ public class MainActivity extends AppCompatActivity {
                 modelToEdit.setDescription(descriptionEdit.getText().toString());
 
                 //on load les attaques
-                if(attack1.getVisibility() != View.GONE){
-                    modelToEdit.attacks.put(attack1Name.getText().toString(),attack1Power.getText().toString()+"|"+attack1Desc.getText().toString());
-                }
-                if(attack2.getVisibility() != View.GONE){
-                    modelToEdit.attacks.put(attack2Name.getText().toString(),attack2Power.getText().toString()+"|"+attack2Desc.getText().toString());
-                }
-                if(attack3.getVisibility() != View.GONE){
-                    modelToEdit.attacks.put(attack3Name.getText().toString(),attack3Power.getText().toString()+"|"+attack3Desc.getText().toString());
-                }
-                if(attack4.getVisibility() != View.GONE){
-                    modelToEdit.attacks.put(attack4Name.getText().toString(),attack4Power.getText().toString()+"|"+attack4Desc.getText().toString());
-                }
+                modelToEdit.attack1 = attack1Name.getText().toString() + "|" + attack1Power.getText().toString()+"|"+attack1Desc.getText().toString();
+
+                modelToEdit.attack2 = attack2Name.getText().toString() + "|" + attack2Power.getText().toString()+"|"+attack2Desc.getText().toString();
+
+                modelToEdit.attack3 = attack3Name.getText().toString() + "|" + attack3Power.getText().toString()+"|"+attack3Desc.getText().toString();
+
+                modelToEdit.attack4 = attack4Name.getText().toString() + "|" + attack4Power.getText().toString()+"|"+attack4Desc.getText().toString();
+
 
                 new Thread(new Runnable() {
                     @Override
@@ -1405,5 +1085,14 @@ public class MainActivity extends AppCompatActivity {
         Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
 
         return rotatedBitmap;
+    }
+}
+
+class OCRDataBlock{
+    public String text;
+    public Rect bounds;
+    public OCRDataBlock(String text, Rect bounds){
+        this.text = text;
+        this.bounds = bounds;
     }
 }

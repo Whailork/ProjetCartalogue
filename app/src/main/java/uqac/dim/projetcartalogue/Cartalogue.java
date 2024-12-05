@@ -196,333 +196,68 @@ public class Cartalogue extends AppCompatActivity {
                 heightEdit.setText(model.getHeight());
                 weightEdit.setText(model.getWeight());
 
-                int nbAttacks = model.attacks.size();
-                // on disable des éléments du layout selon le nombre d'attaques
-                if(nbAttacks == 0){
-            /*attack1.setVisibility(View.GONE);
-            attack2.setVisibility(View.GONE);
-            attack3.setVisibility(View.GONE);
-            attack4.setVisibility(View.GONE);*/
+                //on process l'attaque 1
+                String[] split;
+                split = model.attack1.split("\\|");
+                if(split.length > 0){
+                    attack1Name.setText(split[0]);
                 }
-                else{
-                    if(nbAttacks == 1){
-                        //on process l'attaque 1
-                        Enumeration<String> keys = model.attacks.keys();
-                        String key1 = keys.nextElement();
-                        String str = model.attacks.get(key1);
-                        String[] split;
-                        if(!Objects.equals(str, "|")){
-                             split = str.split("\\|");
-                            attack1Name.setText(key1);
-                            if(split[0].isEmpty()){
-                                attack1Power.setText("0");
-                                //attack1Power.setVisibility(View.GONE);
-                            }
-                            else{
-                                attack1Power.setText(split[0]);
-                            }
-                            if(split.length < 2){
-                                attack1Desc.setText("");
-                                //attack1Desc.setVisibility(View.GONE);
-                            }
-                            else{
-                                if(split[1].isEmpty()){
-                                    attack1Desc.setText("");
-                                    //attack1Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack1Desc.setText(split[1]);
-                                }
-                            }
-                        }
+                if(split.length > 1){
+                    attack1Power.setText(split[1]);
+                }
 
-                /*attack2.setVisibility(View.GONE);
-                attack3.setVisibility(View.GONE);
-                attack4.setVisibility(View.GONE);*/
-                    }
-                    else{
-                        if(nbAttacks == 2){
-                            //on process l'attaque 1
-                            Enumeration<String> keys = model.attacks.keys();
-                            String key = keys.nextElement();
-                            String str = model.attacks.get(key);
-                            String[] split;
-                            if(!Objects.equals(str, "|")){
-                                 split = str.split("\\|");
-                                attack1Name.setText(key);
-                                if(split[0].isEmpty()){
-                                    attack1Power.setText("0");
-                                    //attack1Power.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack1Power.setText(split[0]);
-                                }
-                                if(split.length < 2){
-                                    attack1Desc.setText("");
-                                    //attack1Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    if(split[1].isEmpty()){
-                                        attack1Desc.setText("");
-                                        //attack1Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack1Desc.setText(split[1]);
-                                    }
-                                }
+                if(split.length > 2){
+                    attack1Desc.setText(split[1]);
 
-                            }
+                }
 
 
-                            //on process l'attaque 2
-                            key = keys.nextElement();
-                            str = model.attacks.get(key);
-                            if(!Objects.equals(str, "|")){
-                                split = str.split("\\|");
+                //on process l'attaque 2
+                split = model.attack2.split("\\|");
 
-                                attack2Name.setText(key);
-                                if(split[0].isEmpty()){
-                                    attack2Power.setText("0");
-                                    //attack2Power.setVisibility(View.GONE);
-                                }
-                                else{
-                                    attack2Power.setText(split[0]);
-                                }
-                                if(split.length < 2){
-                                    attack2Desc.setText("");
-                                    //attack2Desc.setVisibility(View.GONE);
-                                }
-                                else{
-                                    if(split[1].isEmpty()){
-                                        attack2Desc.setText("");
-                                        //attack2Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack2Desc.setText(split[1]);
-                                    }
-                                }
-                            }
+                if(split.length > 0){
+                    attack2Name.setText(split[0]);
+                }
 
+                if(split.length > 1){
+                    attack2Power.setText(split[1]);
+                }
 
-                            //attack3.setVisibility(View.GONE);
-                            //attack4.setVisibility(View.GONE);
-                        }
-                        else{
-                            if(nbAttacks == 3){
-                                //on process l'attaque 1
-                                Enumeration<String> keys = model.attacks.keys();
-                                String key = keys.nextElement();
-                                String str = model.attacks.get(key);
-                                String[] split;
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
-                                    attack1Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack1Power.setText("0");
-                                        //attack1Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack1Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack1Desc.setText("");
-                                        //attack1Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack1Desc.setText("");
-                                            //attack1Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack1Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
+                if(split.length > 2){
+                    attack2Desc.setText(split[2]);
 
+                }
 
+                //on process l'attaque 3
+                split = model.attack3.split("\\|");
 
-                                //on process l'attaque 2
-                                key = keys.nextElement();
-                                str = model.attacks.get(key);
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
+                if(split.length > 0){
+                    attack3Name.setText(split[0]);
+                }
 
-                                    attack2Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack2Power.setText("0");
-                                        //attack2Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack2Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack2Desc.setText("");
-                                        //attack2Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack2Desc.setText("");
-                                            //attack2Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack2Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
+                if(split.length > 1){
+                    attack3Power.setText(split[1]);
+                }
 
+                if(split.length > 2){
+                    attack3Desc.setText(split[2]);
 
-                                //on process l'attaque 3
-                                key = keys.nextElement();
-                                str = model.attacks.get(key);
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
+                }
 
-                                    attack3Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack3Power.setText("0");
-                                        //attack3Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack3Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack3Desc.setText("");
-                                        //attack3Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack3Desc.setText("");
-                                            //attack3Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack3Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
+                //on process l'attaque 4
+                split = model.attack4.split("\\|");
 
-                                //attack4.setVisibility(View.GONE);
-                            }
-                            else{
-                                //on process l'attaque 1
-                                Enumeration<String> keys = model.attacks.keys();
-                                String key = keys.nextElement();
-                                String str = model.attacks.get(key);
-                                String[] split;
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
-                                    attack1Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack1Power.setText("0");
-                                        //attack1Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack1Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack1Desc.setText("");
-                                        //attack1Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack1Desc.setText("");
-                                            //attack1Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack1Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
+                if(split.length > 0){
+                    attack4Name.setText(split[0]);
+                }
 
+                if(split.length > 1){
+                    attack4Power.setText(split[1]);
+                }
 
+                if(split.length > 2){
+                    attack4Desc.setText(split[2]);
 
-                                //on process l'attaque 2
-                                key = keys.nextElement();
-                                str = model.attacks.get(key);
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
-
-                                    attack2Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack2Power.setText("0");
-                                        //attack2Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack2Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack2Desc.setText("");
-                                        //attack2Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack2Desc.setText("");
-                                            //attack2Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack2Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
-                                //on process l'attaque 3
-                                key = keys.nextElement();
-                                str = model.attacks.get(key);
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
-
-                                    attack3Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack3Power.setText("0");
-                                        //attack3Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack3Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack3Desc.setText("");
-                                        //attack3Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack3Desc.setText("");
-                                            //attack3Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack3Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
-
-                                //on process l'attaque 4
-                                key = keys.nextElement();
-                                str = model.attacks.get(key);
-                                if(!Objects.equals(str, "|")){
-                                    split = str.split("\\|");
-
-                                    attack4Name.setText(key);
-                                    if(split[0].isEmpty()){
-                                        attack4Power.setText("0");
-                                        //attack4Power.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        attack4Power.setText(split[0]);
-                                    }
-                                    if(split.length < 2){
-                                        attack4Desc.setText("");
-                                        //attack4Desc.setVisibility(View.GONE);
-                                    }
-                                    else{
-                                        if(split[1].isEmpty()){
-                                            attack4Desc.setText("");
-                                            //attack4Desc.setVisibility(View.GONE);
-                                        }
-                                        else{
-                                            attack4Desc.setText(split[1]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
 
                 descriptionEdit.setText(model.getDescription());
@@ -544,18 +279,14 @@ public class Cartalogue extends AppCompatActivity {
                         model.setDescription(descriptionEdit.getText().toString());
 
                         //on load les attaques
-                        if(attack1.getVisibility() != View.GONE){
-                            model.attacks.put(attack1Name.getText().toString(),attack1Power.getText().toString()+"|"+attack1Desc.getText().toString());
-                        }
-                        if(attack2.getVisibility() != View.GONE){
-                            model.attacks.put(attack2Name.getText().toString(),attack2Power.getText().toString()+"|"+attack2Desc.getText().toString());
-                        }
-                        if(attack3.getVisibility() != View.GONE){
-                            model.attacks.put(attack3Name.getText().toString(),attack3Power.getText().toString()+"|"+attack3Desc.getText().toString());
-                        }
-                        if(attack4.getVisibility() != View.GONE){
-                            model.attacks.put(attack4Name.getText().toString(),attack4Power.getText().toString()+"|"+attack4Desc.getText().toString());
-                        }
+                        model.attack1 = attack1Name.getText().toString() + "|" + attack1Power.getText().toString()+"|"+attack1Desc.getText().toString();
+
+                        model.attack2 = attack2Name.getText().toString() + "|" + attack2Power.getText().toString()+"|"+attack2Desc.getText().toString();
+
+                        model.attack3 = attack3Name.getText().toString() + "|" + attack3Power.getText().toString()+"|"+attack3Desc.getText().toString();
+
+                        model.attack4 = attack4Name.getText().toString() + "|" + attack4Power.getText().toString()+"|"+attack4Desc.getText().toString();
+
 
                         new Thread(new Runnable() {
                             @Override
