@@ -36,8 +36,6 @@
         android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
         android:background="@color/Dragon"
-
-        app:itemIconTint="@color/white"
         app:itemTextColor="@color/white"
         app:itemRippleColor="@color/black"
         app:menu="@menu/bottom_nav_menu"

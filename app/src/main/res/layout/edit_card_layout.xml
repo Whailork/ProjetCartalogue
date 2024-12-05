@@ -62,6 +62,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="isAlolan"/>
+                <CheckBox
+                    android:id="@+id/isDeck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deck"/>
                 <Spinner
                     android:id="@+id/stageSpinner"
                     android:layout_width="wrap_content"

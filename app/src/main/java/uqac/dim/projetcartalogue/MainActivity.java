@@ -6,6 +6,7 @@ import static android.graphics.Color.valueOf;
 
 import static androidx.core.content.ContentProviderCompat.requireContext;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -143,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setItemIconTintList(null);
+
         Context context = getApplicationContext();
         cbd = CarteBD.getDataBase(context);
         CarteDao carteDao = cbd.carteDao();
@@ -188,6 +192,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (itemId == R.id.item_ouverture_fragment_1){
             Toast.makeText(MainActivity.this, "Open User", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, LoginPage.class);
+            try{
+                startActivity(intent);
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
         }
 
         //get une photo from stockage
@@ -217,10 +228,6 @@ public class MainActivity extends AppCompatActivity {
 
             Toast.makeText(MainActivity.this, "Open Collection", Toast.LENGTH_SHORT).show();
         }
-
-
-        if (selectedFragment != null)
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
         return true;
     };
     public void StartCameraActivity(View view){

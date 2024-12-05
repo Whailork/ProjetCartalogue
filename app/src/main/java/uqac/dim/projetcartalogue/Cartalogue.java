@@ -16,6 +16,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -47,8 +48,10 @@ public class Cartalogue extends AppCompatActivity {
     CarteBD cbd;
     List<CarteModel> carteList;
     List<CarteModel> carteActuel;
+    List<CarteModel> deckList;
     CarteDao carteDao;
     CardAdapter adapter;
+    CardAdapter adapterDeck;
     EditText searchBar;
     Button btnAToZ, btnType, btnNo, btnStage, btnReset;
     ImageView imgArrow;
@@ -56,12 +59,15 @@ public class Cartalogue extends AppCompatActivity {
     Button currentFilterBtn = null;
     String currentSearch = "";
     int userId;
+    RecyclerView recyclerView;
 
 
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalogue);
+
+        recyclerView = findViewById(R.id.recyclerViewCarte);
 
         if (savedInstanceState != null) {
             // Récupérer les valeurs enregistrées
@@ -88,7 +94,20 @@ public class Cartalogue extends AppCompatActivity {
         imgArrow = findViewById(R.id.imgArrow);
         btnReset = findViewById(R.id.btnReset);
         btnReset.setOnClickListener(this::btnResetClicked);
+        Button btnDeck = findViewById(R.id.btnDeck);
 
+        btnDeck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (CarteModel carteModel:carteActuel){
+                    if (carteModel.isDeck()){
+                        deckList.add(carteModel);
+                    }
+                }
+                adapterDeck = new CardAdapter(deckList, getApplicationContext());
+                recyclerView.setAdapter(adapterDeck);
+            }
+        });
         //set le listener de la search bar
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -120,7 +139,7 @@ public class Cartalogue extends AppCompatActivity {
 
             }
         });
-        RecyclerView recyclerView = findViewById(R.id.recyclerViewCarte);
+
 
         adapter = new CardAdapter(carteActuel, this);
         adapter.setOnClickListener(new CardAdapter.OnClickListener() {
