@@ -18,6 +18,7 @@ import java.util.UUID;
 public class LoginPage extends AppCompatActivity {
 
     public EditText password, username;
+    public int userId = -1;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +37,6 @@ public class LoginPage extends AppCompatActivity {
 
             String strUsername = username.getText().toString();
             String strPassword = password.getText().toString();
-            int userId = -1;
             //get les cartes dans la bd et les mettre dans la liste
             ArrayList<CarteModel> cartes = new ArrayList<>();
             carteDao.getAllCarte().observe(this, new Observer<List<CarteModel>>() {
@@ -57,7 +57,7 @@ public class LoginPage extends AppCompatActivity {
             //on cherche dans la bd pour voir s'il y a des cartes associées au user
 
             boolean userFound = false;
-            /*for (CarteModel model: cartes) {
+            for (CarteModel model: cartes) {
                 String[] user = model.idUtilisateur.split("\\|");
                 if(user.length == 2){
                     if(user[1].equals(strUsername)){
@@ -75,16 +75,25 @@ public class LoginPage extends AppCompatActivity {
                     }
 
                 }
-            }*/
+            }
             if(!userFound){
                 //on connecte et on génère un nouveau userId
                 userId = UUID.randomUUID().hashCode();
             }
             intent.putExtra("userId",userId);
+
+
             startActivity(intent);
         }
         catch (Exception e){
             System.out.println(e);
         }
+    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Exemple de données à enregistrer
+        outState.putInt("userId", userId);  // Enregistrer une chaîne
     }
 }
