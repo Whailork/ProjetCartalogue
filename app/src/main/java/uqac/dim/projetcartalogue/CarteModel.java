@@ -24,8 +24,6 @@ public class CarteModel implements Parcelable {
     @ColumnInfo(name = "idUtilisateur")
     String idUtilisateur;
 
-    @ColumnInfo(name = "idDeck")
-    String idDeck;
 
     @ColumnInfo (name = "numero")
     String numero;
@@ -44,6 +42,9 @@ public class CarteModel implements Parcelable {
 
     @ColumnInfo (name = "alolan")
     boolean alolan;
+
+    @ColumnInfo (name = "deck")
+    boolean deck;
 
     @ColumnInfo (name = "evolvesFrom")
     String evolvesFrom;
@@ -84,6 +85,7 @@ public class CarteModel implements Parcelable {
         nom = "";
         numero = "";
         attacks = new Hashtable<>();
+        deck = false;
     }
 
     protected CarteModel(Parcel in) {
@@ -94,6 +96,7 @@ public class CarteModel implements Parcelable {
         imageId = in.readInt();
         stage = in.readString();
         alolan = in.readByte() != 0;
+        deck = in.readByte() != 0;
         evolvesFrom = in.readString();
         pv = in.readInt();
         pokemonType = in.readString();
@@ -161,6 +164,14 @@ public class CarteModel implements Parcelable {
 
     public void setAlolan(boolean alolan) {
         this.alolan = alolan;
+    }
+
+    public boolean isDeck() {
+        return deck;
+    }
+
+    public void setDeck(boolean deck) {
+        this.deck = deck;
     }
 
     public String getEvolvesFrom() {

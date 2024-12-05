@@ -70,9 +70,13 @@
             android:padding="15dp"
             android:backgroundTint="#cccccc"/>
 
-
-
     </LinearLayout>
+    <Button
+        android:id="@+id/btnDeck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DECK"
+        android:background="@drawable/btn_unclicked"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCarte"
@@ -83,4 +87,5 @@
         tools:layout_editor_absoluteY="10dp">
 
     </androidx.recyclerview.widget.RecyclerView>
+
 </LinearLayout>
