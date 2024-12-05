@@ -223,6 +223,13 @@
                 android:layout_gravity="bottom"
                 android:layout_weight="1"
                 android:text="Save" />
+            <Button
+                android:id="@+id/deleteBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:text="Delete"/>
 
             <Button
                 android:id="@+id/cancelBtn"

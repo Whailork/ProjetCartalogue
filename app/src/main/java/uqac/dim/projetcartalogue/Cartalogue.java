@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.JsonWriter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,6 +35,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.security.AllPermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -44,6 +46,7 @@ import java.util.Objects;
 public class Cartalogue extends AppCompatActivity {
     CarteBD cbd;
     List<CarteModel> carteList;
+    List<CarteModel> carteActuel;
     CarteDao carteDao;
     CardAdapter adapter;
     EditText searchBar;
@@ -52,6 +55,7 @@ public class Cartalogue extends AppCompatActivity {
     boolean inversedFilter = false;
     Button currentFilterBtn = null;
     String currentSearch = "";
+    int userId;
 
 
     @Override
@@ -59,6 +63,14 @@ public class Cartalogue extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalogue);
 
+        if (savedInstanceState != null) {
+            // Récupérer les valeurs enregistrées
+            userId = savedInstanceState.getInt("userId");
+        }
+
+
+
+        carteActuel = new ArrayList<>();
         cbd = CarteBD.getDataBase(getApplicationContext());
         carteDao = cbd.carteDao();
         carteList = new ArrayList<>();
@@ -76,7 +88,6 @@ public class Cartalogue extends AppCompatActivity {
         imgArrow = findViewById(R.id.imgArrow);
         btnReset = findViewById(R.id.btnReset);
         btnReset.setOnClickListener(this::btnResetClicked);
-
 
         //set le listener de la search bar
         searchBar.addTextChangedListener(new TextWatcher() {
@@ -111,7 +122,7 @@ public class Cartalogue extends AppCompatActivity {
         });
         RecyclerView recyclerView = findViewById(R.id.recyclerViewCarte);
 
-        adapter = new CardAdapter(carteList, this);
+        adapter = new CardAdapter(carteActuel, this);
         adapter.setOnClickListener(new CardAdapter.OnClickListener() {
             @Override
             public void onClick(int position, CarteModel model) {
@@ -168,6 +179,7 @@ public class Cartalogue extends AppCompatActivity {
                 EditText descriptionEdit = popupView.findViewById(R.id.descriptionEdit);
                 Button saveBtn = popupView.findViewById(R.id.saveBtn);
                 Button cancelBtn = popupView.findViewById(R.id.cancelBtn);
+                Button deleteBtn = popupView.findViewById(R.id.deleteBtn);
 
 
                 // on set les valeurs des views
@@ -300,6 +312,16 @@ public class Cartalogue extends AppCompatActivity {
                     }
                 });
 
+                deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        cbd.carteDao().delete(model);
+                        carteActuel.remove(model);
+                        carteList.remove(model);
+                        popupWindow.dismiss();
+                    }
+                });
+
                 cancelBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -342,6 +364,18 @@ public class Cartalogue extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+
+        // Aller chercher les carte qui on le même id de l'utilisateur et les mettres dans un nouvelle liste
+
+        for (CarteModel carteModel:carteList){
+            String[] user = carteModel.idUtilisateur.split("\\|");
+            if (user[0].isEmpty()) {
+                int id = Integer.parseInt(user[0]);
+                if (id == userId) {
+                    carteActuel.add(carteModel);
+                }
+            }
+        }
 
 
     }
