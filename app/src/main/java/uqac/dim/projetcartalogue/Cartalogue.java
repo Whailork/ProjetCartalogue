@@ -115,25 +115,60 @@ public class Cartalogue extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
             {
-                currentSearch = charSequence.toString();
-                if(charSequence.toString().isEmpty() && currentFilterBtn == null){
-                    btnReset.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.circle_background));
+                carteActuel.clear();
+                currentSearch = charSequence.toString().toUpperCase();
+                if(currentSearch.isEmpty()){
+                    if(currentFilterBtn == null){
+                        btnReset.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.circle_background));
+                    }
+                    carteActuel.addAll(carteList);
                 }
                 else{
                     btnReset.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.circle_filter_background));
 
-                }
-                //on check le filtre qui est entré et on fait la recherche selon le string
-                if(currentFilterBtn.equals(btnAToZ)){
-                    for (CarteModel c: carteList) {
-                        
+                    //on check le filtre qui est entré et on fait la recherche selon le string
+                    if(Objects.equals(currentFilterBtn,btnAToZ) || currentFilterBtn == null){
+                        for (CarteModel c: carteList) {
+                            if(c.nom.toUpperCase().contains(currentSearch)){
+                                carteActuel.add(c);
+                            }
+                        }
+                    }
+                    else{
+                        if(currentFilterBtn.equals(btnNo)){
+                            for (CarteModel c: carteList) {
+                                if(c.numero.toUpperCase().contains(currentSearch)){
+                                    carteActuel.add(c);
+                                }
+                            }
+                        }
+                        else{
+                            if(currentFilterBtn.equals(btnType)){
+                                for (CarteModel c: carteList) {
+                                    if(c.type.toUpperCase().contains(currentSearch)){
+                                        carteActuel.add(c);
+                                    }
+                                }
+                            }
+                            else{
+                                if(currentFilterBtn.equals(btnStage)){
+                                    for (CarteModel c: carteList) {
+                                        if(c.stage.toUpperCase().contains(currentSearch)){
+                                            carteActuel.add(c);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-
+            public void afterTextChanged(Editable editable)
+            {
+                // Notify the adapter that the data has changed
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -360,9 +395,23 @@ public class Cartalogue extends AppCompatActivity {
             @Override
             public void onChanged(List<CarteModel> ca) {
                 // Clear the existing list and add the new data from the database
-                carteList.clear();  // Clear previous data
+                carteList.clear();
+                carteActuel.clear();// Clear previous data
                 if (ca != null) {
-                    carteList.addAll(ca);  // Add new data
+                    //on ajoute à carteList juste les cartes qui sont à notre user
+                    for (CarteModel carteModel:ca){
+                        if(!carteModel.idUtilisateur.isEmpty()){
+                            String[] user = carteModel.idUtilisateur.split("\\|");
+                            if (!user[0].isEmpty()) {
+                                int id = Integer.parseInt(user[0]);
+                                if (id == userId) {
+                                    carteList.add(carteModel);
+                                }
+                            }
+                        }
+
+                    }
+
                 }
 
                 // Set the images for the cards
@@ -377,27 +426,12 @@ public class Cartalogue extends AppCompatActivity {
                     }
                 }
 
-                for (CarteModel carteModel:carteList){
-                    if(!carteModel.idUtilisateur.isEmpty()){
-                        String[] user = carteModel.idUtilisateur.split("\\|");
-                        if (!user[0].isEmpty()) {
-                            int id = Integer.parseInt(user[0]);
-                            if (id == userId) {
-                                carteActuel.add(carteModel);
-                            }
-                        }
-                    }
 
-                }
+                carteActuel.addAll(carteList);
                 // Notify the adapter that the data has changed
                 adapter.notifyDataSetChanged();
             }
         });
-
-        // Aller chercher les carte qui on le même id de l'utilisateur et les mettres dans un nouvelle liste
-
-
-
 
     }
 
