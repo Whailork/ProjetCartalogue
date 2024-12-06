@@ -11,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -149,14 +150,11 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setItemIconTintList(null);
 
-        Context context = getApplicationContext();
-        cbd = CarteBD.getDataBase(context);
-        CarteDao carteDao = cbd.carteDao();
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        deckList = new ArrayList<>();
         evolvesFrom = false;
         middleLeft = 0;
         bottomLeft = 0;
@@ -181,10 +179,6 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setVisibility(View.VISIBLE);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
-
-        //click pour camera
-
-
 
     }
     private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
@@ -267,34 +261,70 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-           // if (data != null) {
-                if (requestCode == 1) {
-                    Uri imageUri = data.getData();
 
-                    try {
+            // on va loader les cartes du deck pour savoir si le deck est plein
+            Context context = getApplicationContext();
+            cbd = CarteBD.getDataBase(context);
+            CarteDao carteDao = cbd.carteDao();
+            carteDao.getAllCarte().observe(this, new Observer<List<CarteModel>>() {
 
-                        imgBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                @Override
+                public void onChanged(List<CarteModel> ca) {
+                    // Clear the existing list and add the new data from the database
+                    deckList.clear();
+                    ArrayList<CarteModel> carteList = new ArrayList<>();
+                    // Clear previous data
+                    if (ca != null) {
+                        //on ajoute à carteList juste les cartes qui sont à notre user
+                        for (CarteModel carteModel:ca){
+                            if(!carteModel.idUtilisateur.isEmpty()){
+                                String[] user = carteModel.idUtilisateur.split("\\|");
+                                if (!user[0].isEmpty()) {
+                                    int id = Integer.parseInt(user[0]);
+                                    if (id == getIntent().getIntExtra("userId",-1)) {
+                                        carteList.add(carteModel);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-                        ExtractText(imgBitmap);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    // on load les cartes du deck
+                    for (CarteModel carteModel:carteList){
+                        if (carteModel.isDeck()){
+                            if(!deckList.contains(carteModel)){
+                                deckList.add(carteModel);
+                            }
+                        }
                     }
                 }
-                if (requestCode == 2) {
-                    try {
+            });
 
-                        File f = new File(currentPhotoPath);
-                        Uri contentUri = Uri.fromFile(f);
-                        ImageDecoder.Source source =  ImageDecoder.createSource(this.getContentResolver(), contentUri);
-                        imgBitmap = ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.RGBA_F16, true);
-                        imgBitmap = rotateBitmap(imgBitmap,270);
-                        ExtractText(imgBitmap);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+            if (requestCode == 1) {
+                Uri imageUri = data.getData();
+
+                try {
+
+                    imgBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+
+                    ExtractText(imgBitmap);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-           // }
+            }
+            if (requestCode == 2) {
+                try {
 
+                    File f = new File(currentPhotoPath);
+                    Uri contentUri = Uri.fromFile(f);
+                    ImageDecoder.Source source =  ImageDecoder.createSource(this.getContentResolver(), contentUri);
+                    imgBitmap = ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.RGBA_F16, true);
+                    imgBitmap = rotateBitmap(imgBitmap,270);
+                    ExtractText(imgBitmap);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
         }
     }
@@ -954,6 +984,7 @@ public class MainActivity extends AppCompatActivity {
         pvEdit.setText(modelToEdit.getPv() + "");
         chkIsAlolan.setChecked(modelToEdit.isAlolan());
         chkInDeck.setChecked(modelToEdit.deck);
+        chkInDeck.setText("Deck (" + deckList.size() +"/60)");
         //on set le selected item du spinner
         List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
         if(modelToEdit.getStage().matches("(?i)base") || modelToEdit.getStage().matches("(?i)basic")  ){
@@ -1096,21 +1127,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*chkInDeck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        chkInDeck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b){
                     if(deckList.size() >= 60){
                         chkInDeck.setChecked(false);
                     }
+                    else{
+                        deckList.add(modelToEdit);
+
+                    }
 
                 }
                 else{
                     deckList.remove(modelToEdit);
                 }
-
+                chkInDeck.setText("Deck (" + deckList.size() +"/60)");
             }
-        });*/
+        });
 
     }
     public Bitmap rotateBitmap(Bitmap original, float degrees) {

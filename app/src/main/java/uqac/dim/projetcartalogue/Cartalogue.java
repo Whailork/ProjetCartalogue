@@ -234,6 +234,7 @@ public class Cartalogue extends AppCompatActivity {
                 pvEdit.setText(model.getPv() + "");
                 chkIsAlolan.setChecked(model.isAlolan());
                 chkInDeck.setChecked(model.deck);
+                chkInDeck.setText("Deck (" + deckList.size() +"/60)");
                 //on set le selected item du spinner
                 List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
                 if(model.getStage().matches("(?i)base") || model.getStage().matches("(?i)basic")  ){
@@ -380,12 +381,16 @@ public class Cartalogue extends AppCompatActivity {
                             if(deckList.size() >= 60){
                                 chkInDeck.setChecked(false);
                             }
+                            else{
+                                deckList.add(model);
+
+                            }
 
                         }
                         else{
                             deckList.remove(model);
                         }
-
+                        chkInDeck.setText("Deck (" + deckList.size() +"/60)");
                     }
                 });
             }
@@ -400,9 +405,10 @@ public class Cartalogue extends AppCompatActivity {
 
             @Override
             public void onChanged(List<CarteModel> ca) {
-                // Clear the existing list and add the new data from the database
+                // Clear previous data
                 carteList.clear();
-                carteActuel.clear();// Clear previous data
+                carteActuel.clear();
+                deckList.clear();
                 if (ca != null) {
                     //on ajoute à carteList juste les cartes qui sont à notre user
                     for (CarteModel carteModel:ca){
