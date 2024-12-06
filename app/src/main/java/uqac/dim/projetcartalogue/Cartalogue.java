@@ -69,12 +69,9 @@ public class Cartalogue extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerViewCarte);
 
-        if (savedInstanceState != null) {
-            // Récupérer les valeurs enregistrées
-            userId = savedInstanceState.getInt("userId");
-        }
-
-
+        // Récupérer les valeurs enregistrées
+        Intent test  = getIntent();
+        userId = test.getIntExtra("userId",-1);
 
         carteActuel = new ArrayList<>();
         cbd = CarteBD.getDataBase(getApplicationContext());
@@ -379,6 +376,19 @@ public class Cartalogue extends AppCompatActivity {
                         carteModel.imageId = resourceId;  // Set the resource image
                     }
                 }
+
+                for (CarteModel carteModel:carteList){
+                    if(!carteModel.idUtilisateur.isEmpty()){
+                        String[] user = carteModel.idUtilisateur.split("\\|");
+                        if (!user[0].isEmpty()) {
+                            int id = Integer.parseInt(user[0]);
+                            if (id == userId) {
+                                carteActuel.add(carteModel);
+                            }
+                        }
+                    }
+
+                }
                 // Notify the adapter that the data has changed
                 adapter.notifyDataSetChanged();
             }
@@ -386,15 +396,7 @@ public class Cartalogue extends AppCompatActivity {
 
         // Aller chercher les carte qui on le même id de l'utilisateur et les mettres dans un nouvelle liste
 
-        for (CarteModel carteModel:carteList){
-            String[] user = carteModel.idUtilisateur.split("\\|");
-            if (user[0].isEmpty()) {
-                int id = Integer.parseInt(user[0]);
-                if (id == userId) {
-                    carteActuel.add(carteModel);
-                }
-            }
-        }
+
 
 
     }
