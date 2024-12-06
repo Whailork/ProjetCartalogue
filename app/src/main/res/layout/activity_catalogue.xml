@@ -76,7 +76,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="DECK"
-        android:background="@drawable/btn_unclicked"/>
+        android:background="@drawable/btn_unclicked"
+        android:onClick="btnDeckClicked"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCarte"
