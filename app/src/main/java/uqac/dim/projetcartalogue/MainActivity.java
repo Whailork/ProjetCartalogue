@@ -219,6 +219,11 @@ public class MainActivity extends AppCompatActivity {
             }).start();*/
 
             Intent intent = new Intent(MainActivity.this, Cartalogue.class);
+            //on transfer les infos de connexion aux cartalogue
+            intent.putExtra("userId",getIntent().getIntExtra("userId",-1));
+            intent.putExtra("username",getIntent().getStringExtra("username"));
+            intent.putExtra("password",getIntent().getStringExtra("password"));
+
             try{
                 startActivity(intent);
             }
@@ -1058,6 +1063,8 @@ public class MainActivity extends AppCompatActivity {
 
                 modelToEdit.attack4 = attack4Name.getText().toString() + "|" + attack4Power.getText().toString()+"|"+attack4Desc.getText().toString();
 
+                // on crée l'idUtilisateur à partir des infos de connexion
+                modelToEdit.idUtilisateur = getIntent().getIntExtra("userId",-1) + "|" + getIntent().getStringExtra("username") + "|" + getIntent().getStringExtra("password");
 
                 new Thread(new Runnable() {
                     @Override
