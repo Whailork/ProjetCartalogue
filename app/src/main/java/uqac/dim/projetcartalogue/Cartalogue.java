@@ -65,6 +65,8 @@ public class Cartalogue extends AppCompatActivity {
 
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalogue);
 
@@ -167,6 +169,7 @@ public class Cartalogue extends AppCompatActivity {
         adapter.setOnClickListener(new CardAdapter.OnClickListener() {
             @Override
             public void onClick(int position, CarteModel model) {
+
                 // copier collé de la fonction editCartePopup, c'est juste que je pouvais pas la rendre statci donc je la copy paste ici
                 LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
                 View popupView = inflater.inflate(R.layout.edit_card_layout, null);
