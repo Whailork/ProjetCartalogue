@@ -107,24 +107,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
+                android:maxWidth="100dp"
                 android:singleLine="false"
-/>
+                android:layout_weight="2"/>
             <EditText
                 android:id="@+id/attack1Desc"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:singleLine="false"
-                android:layout_weight="3"/>
+                android:layout_weight="20"/>
             <EditText
                 android:id="@+id/attack1Power"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
                 android:singleLine="false"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:layout_weight="1"/>
 
         </LinearLayout>
 
@@ -138,23 +138,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
-                android:singleLine="false" />
+                android:maxWidth="100dp"
+                android:singleLine="false"
+                android:layout_weight="2"/>
             <EditText
                 android:id="@+id/attack2Desc"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:singleLine="false"
-                android:layout_weight="3"/>
+                android:layout_weight="20"/>
             <EditText
                 android:id="@+id/attack2Power"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
                 android:singleLine="false"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:layout_weight="1"/>
 
         </LinearLayout>
 
@@ -168,23 +169,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
-                android:singleLine="false" />
+                android:maxWidth="100dp"
+                android:singleLine="false"
+                android:layout_weight="2"/>
             <EditText
                 android:id="@+id/attack3Desc"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:singleLine="false"
-                android:layout_weight="3"/>
+                android:layout_weight="20"/>
             <EditText
                 android:id="@+id/attack3Power"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
                 android:singleLine="false"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:layout_weight="1"/>
         </LinearLayout>
 
         <LinearLayout
@@ -197,15 +199,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:minWidth="10dp"
-                android:singleLine="false" />
+                android:maxWidth="100dp"
+                android:singleLine="false"
+                android:layout_weight="2"/>
             <EditText
                 android:id="@+id/attack4Desc"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:singleLine="false"
-                android:layout_weight="3"/>
+                android:layout_weight="20"/>
             <EditText
                 android:id="@+id/attack4Power"
                 android:layout_width="wrap_content"
@@ -213,7 +216,8 @@
                 android:text=""
                 android:minWidth="10dp"
                 android:singleLine="false"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:layout_weight="1"/>
 
         </LinearLayout>
 
