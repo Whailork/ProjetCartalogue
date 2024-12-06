@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_STORAGE_CODE = 130;
     public final double colorMargin = 0.3;
     ActionBarDrawerToggle toggle;
+    List<CarteModel> deckList;
 
     //TOP
     Pattern basicEn = Pattern.compile("Basic", Pattern.CASE_INSENSITIVE); // testé et fonctionnel
@@ -907,6 +909,7 @@ public class MainActivity extends AppCompatActivity {
         Spinner typeSpinner = popupView.findViewById(R.id.typeSpinner);
         EditText pvEdit = popupView.findViewById(R.id.PvEdit);
         CheckBox chkIsAlolan = popupView.findViewById(R.id.isAlolan);
+        CheckBox chkInDeck = popupView.findViewById(R.id.isDeck);
         Spinner stageSpinner = popupView.findViewById(R.id.stageSpinner);
         EditText evolvesFromEdit = popupView.findViewById(R.id.evolvesFromEdit);
         EditText heightEdit = popupView.findViewById(R.id.heightEdit);
@@ -950,6 +953,7 @@ public class MainActivity extends AppCompatActivity {
 
         pvEdit.setText(modelToEdit.getPv() + "");
         chkIsAlolan.setChecked(modelToEdit.isAlolan());
+        chkInDeck.setChecked(modelToEdit.deck);
         //on set le selected item du spinner
         List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
         if(modelToEdit.getStage().matches("(?i)base") || modelToEdit.getStage().matches("(?i)basic")  ){
@@ -1047,7 +1051,8 @@ public class MainActivity extends AppCompatActivity {
                 modelToEdit.setNom(nameEdit.getText().toString());
                 modelToEdit.setType(typeSpinner.getSelectedItem().toString());
                 modelToEdit.setPv(Integer.parseInt(pvEdit.getText().toString()));
-                modelToEdit.setAlolan(chkIsAlolan.isActivated());
+                modelToEdit.setAlolan(chkIsAlolan.isChecked());
+                modelToEdit.setDeck(chkInDeck.isChecked());
                 modelToEdit.setStage(stageSpinner.getSelectedItem().toString());
                 modelToEdit.setEvolvesFrom(evolvesFromEdit.getText().toString());
                 modelToEdit.setHeight(heightEdit.getText().toString());
@@ -1090,6 +1095,22 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        /*chkInDeck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    if(deckList.size() >= 60){
+                        chkInDeck.setChecked(false);
+                    }
+
+                }
+                else{
+                    deckList.remove(modelToEdit);
+                }
+
+            }
+        });*/
 
     }
     public Bitmap rotateBitmap(Bitmap original, float degrees) {

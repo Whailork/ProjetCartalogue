@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -53,7 +54,7 @@ public class Cartalogue extends AppCompatActivity {
     CardAdapter adapter;
     CardAdapter adapterDeck;
     EditText searchBar;
-    Button btnAToZ, btnType, btnNo, btnStage, btnReset;
+    Button btnAToZ, btnType, btnNo, btnStage, btnReset,btnDeck;
     ImageView imgArrow;
     boolean inversedFilter = false;
     Button currentFilterBtn = null;
@@ -74,6 +75,7 @@ public class Cartalogue extends AppCompatActivity {
         userId = test.getIntExtra("userId",-1);
 
         carteActuel = new ArrayList<>();
+        deckList = new ArrayList<>();
         cbd = CarteBD.getDataBase(getApplicationContext());
         carteDao = cbd.carteDao();
         carteList = new ArrayList<>();
@@ -91,20 +93,8 @@ public class Cartalogue extends AppCompatActivity {
         imgArrow = findViewById(R.id.imgArrow);
         btnReset = findViewById(R.id.btnReset);
         btnReset.setOnClickListener(this::btnResetClicked);
-        Button btnDeck = findViewById(R.id.btnDeck);
+        btnDeck = findViewById(R.id.btnDeck);
 
-        btnDeck.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                for (CarteModel carteModel:carteActuel){
-                    if (carteModel.isDeck()){
-                        deckList.add(carteModel);
-                    }
-                }
-                adapterDeck = new CardAdapter(deckList, getApplicationContext());
-                recyclerView.setAdapter(adapterDeck);
-            }
-        });
         //set le listener de la search bar
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -198,6 +188,7 @@ public class Cartalogue extends AppCompatActivity {
                 Spinner typeSpinner = popupView.findViewById(R.id.typeSpinner);
                 EditText pvEdit = popupView.findViewById(R.id.PvEdit);
                 CheckBox chkIsAlolan = popupView.findViewById(R.id.isAlolan);
+                CheckBox chkInDeck = popupView.findViewById(R.id.isDeck);
                 Spinner stageSpinner = popupView.findViewById(R.id.stageSpinner);
                 EditText evolvesFromEdit = popupView.findViewById(R.id.evolvesFromEdit);
                 EditText heightEdit = popupView.findViewById(R.id.heightEdit);
@@ -242,6 +233,7 @@ public class Cartalogue extends AppCompatActivity {
 
                 pvEdit.setText(model.getPv() + "");
                 chkIsAlolan.setChecked(model.isAlolan());
+                chkInDeck.setChecked(model.deck);
                 //on set le selected item du spinner
                 List<String> stages = Arrays.asList(getResources().getStringArray(R.array.stages_array));
                 if(model.getStage().matches("(?i)base") || model.getStage().matches("(?i)basic")  ){
@@ -334,7 +326,8 @@ public class Cartalogue extends AppCompatActivity {
                         model.setNom(nameEdit.getText().toString());
                         model.setType(typeSpinner.getSelectedItem().toString());
                         model.setPv(Integer.parseInt(pvEdit.getText().toString()));
-                        model.setAlolan(chkIsAlolan.isActivated());
+                        model.setAlolan(chkIsAlolan.isChecked());
+                        model.setDeck(chkInDeck.isChecked());
                         model.setStage(stageSpinner.getSelectedItem().toString());
                         model.setEvolvesFrom(evolvesFromEdit.getText().toString());
                         model.setHeight(heightEdit.getText().toString());
@@ -380,8 +373,21 @@ public class Cartalogue extends AppCompatActivity {
 
                     }
                 });
+                chkInDeck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        if(b){
+                            if(deckList.size() >= 60){
+                                chkInDeck.setChecked(false);
+                            }
 
+                        }
+                        else{
+                            deckList.remove(model);
+                        }
 
+                    }
+                });
             }
         });
         recyclerView.setAdapter(adapter);
@@ -426,6 +432,15 @@ public class Cartalogue extends AppCompatActivity {
                     }
                 }
 
+                // on load les cartes du deck
+                for (CarteModel carteModel:carteList){
+                    if (carteModel.isDeck()){
+                        if(!deckList.contains(carteModel)){
+                            deckList.add(carteModel);
+                        }
+
+                    }
+                }
 
                 carteActuel.addAll(carteList);
                 // Notify the adapter that the data has changed
@@ -645,8 +660,32 @@ public class Cartalogue extends AppCompatActivity {
         btnType.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_unclicked));
         btnNo.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_unclicked));
         btnStage.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_unclicked));
+        btnDeck.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_unclicked));
+
 
         btnReset.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.circle_background));
+    }
+    public void btnDeckClicked(View view){
+        Button btn = (Button)view;
+        deckList.clear();
+        if(currentFilterBtn != null){
+            currentFilterBtn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_unclicked));
+        }
+        currentFilterBtn = btn;
+        btn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_upwards));
+
+        carteActuel.clear();
+        for (CarteModel carteModel:carteList){
+            if (carteModel.isDeck()){
+                if(!deckList.contains(carteModel)){
+                    deckList.add(carteModel);
+                }
+
+            }
+        }
+        carteActuel.addAll(deckList);
+        btnReset.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.circle_filter_background));
+        adapter.notifyDataSetChanged();
     }
 }
 
