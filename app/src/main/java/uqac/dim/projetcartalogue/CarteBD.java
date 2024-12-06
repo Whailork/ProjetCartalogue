@@ -7,8 +7,8 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {CarteModel.class}, version = 3)
-@TypeConverters({BitmapConverter.class, HashtableConverter.class})
+@Database(entities = {CarteModel.class}, version = 4)
+@TypeConverters({BitmapConverter.class})
 public abstract class CarteBD extends RoomDatabase {
     private static CarteBD INSTANCE;
     public abstract CarteDao carteDao();

@@ -516,7 +516,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     for (int i = indexes.size() -1; i>= 0;i--) {
-                        middleBlocks.remove((int)indexes.get(i));
+                        if(middleBlocks.size() > (int)indexes.get(i)){
+                            middleBlocks.remove((int)indexes.get(i));
+                        }
+
                     }
                     indexes.clear();
                     // on regarde c'est lequel le nom, la description ou la puissance
