@@ -568,7 +568,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //création de la carte à partir des infos récupérés
-                /// set idUtilisateur pour les cartes
                 newCarteModel.setAlolan(isAlolan);
                 newCarteModel.setStage(evolutionText);
                 newCarteModel.setEvolvesFrom(strEvolvesFrom);

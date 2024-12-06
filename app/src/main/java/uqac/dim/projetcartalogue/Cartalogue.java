@@ -360,9 +360,20 @@ public class Cartalogue extends AppCompatActivity {
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        cbd.carteDao().delete(model);
-                        carteActuel.remove(model);
-                        carteList.remove(model);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try{
+                                    cbd.carteDao().delete(model);
+                                    //carteActuel.remove(model);
+                                    //carteList.remove(model);
+
+                                }catch (Exception e){
+                                    System.out.println(e);
+                                }
+
+                            }
+                        }).start();
                         popupWindow.dismiss();
                     }
                 });
@@ -463,7 +474,7 @@ public class Cartalogue extends AppCompatActivity {
             //on toggle le sens du filtre
             if(inversedFilter){
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.downwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -474,7 +485,7 @@ public class Cartalogue extends AppCompatActivity {
             }
             else{
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -492,7 +503,7 @@ public class Cartalogue extends AppCompatActivity {
             }
             currentFilterBtn = btn;
             btn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_upwards));
-            carteList.sort(new Comparator(){
+            carteActuel.sort(new Comparator(){
 
                 public int compare(Object o1, Object o2) {
                     CarteModel c1 = (CarteModel) o1;
@@ -512,7 +523,7 @@ public class Cartalogue extends AppCompatActivity {
             inversedFilter = !inversedFilter;
             if(inversedFilter){
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.downwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -523,7 +534,7 @@ public class Cartalogue extends AppCompatActivity {
             }
             else{
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -541,7 +552,7 @@ public class Cartalogue extends AppCompatActivity {
             imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
             currentFilterBtn = btn;
             btn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_upwards));
-            carteList.sort(new Comparator(){
+            carteActuel.sort(new Comparator(){
 
                 public int compare(Object o1, Object o2) {
                     CarteModel c1 = (CarteModel) o1;
@@ -561,7 +572,7 @@ public class Cartalogue extends AppCompatActivity {
             inversedFilter = !inversedFilter;
             if(inversedFilter){
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.downwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -572,7 +583,7 @@ public class Cartalogue extends AppCompatActivity {
             }
             else{
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -591,7 +602,7 @@ public class Cartalogue extends AppCompatActivity {
             imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
             currentFilterBtn = btn;
             btn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_upwards));
-            carteList.sort(new Comparator(){
+            carteActuel.sort(new Comparator(){
 
                 public int compare(Object o1, Object o2) {
                     CarteModel c1 = (CarteModel) o1;
@@ -611,7 +622,7 @@ public class Cartalogue extends AppCompatActivity {
             inversedFilter = !inversedFilter;
             if(inversedFilter){
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.downwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -622,7 +633,7 @@ public class Cartalogue extends AppCompatActivity {
             }
             else{
                 imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
-                carteList.sort(new Comparator(){
+                carteActuel.sort(new Comparator(){
 
                     public int compare(Object o1, Object o2) {
                         CarteModel c1 = (CarteModel) o1;
@@ -641,7 +652,7 @@ public class Cartalogue extends AppCompatActivity {
             imgArrow.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.upwards_arrow));
             currentFilterBtn = btn;
             btn.setBackground(AppCompatResources.getDrawable(getApplicationContext(),R.drawable.btn_upwards));
-            carteList.sort(new Comparator(){
+            carteActuel.sort(new Comparator(){
 
                 public int compare(Object o1, Object o2) {
                     CarteModel c1 = (CarteModel) o1;
