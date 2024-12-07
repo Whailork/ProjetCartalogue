@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.2"
+androidGifDrawable = "1.2.23"
 cardview = "1.0.0"
 gson = "2.10.1"
 junit = "4.13.2"
@@ -20,6 +21,7 @@ firebaseCrashlyticsBuildtools = "3.0.2"
 contentpager = "1.0.0"
 
 [libraries]
+android-gif-drawable = { module = "pl.droidsonroids.gif:android-gif-drawable", version.ref = "androidGifDrawable" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

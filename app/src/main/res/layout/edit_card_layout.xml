@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#62def8"
+    android:background="@drawable/backgroundlayout"
     android:orientation="horizontal">
 
 
@@ -15,18 +15,22 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="@drawable/backgroundlayout"
+            >
             <ImageView
                 android:id="@+id/pokemonImg"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:src="@drawable/abomasnow"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                />
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                >
 
                 <EditText
                     android:id="@+id/numberEdit"
@@ -238,6 +242,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:background="@drawable/backgroundlayout"
                 android:layout_weight="1"
                 android:text="Save" />
             <Button
@@ -246,6 +251,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:layout_weight="1"
+                android:background="@drawable/backgroundlayout"
                 android:text="Delete"/>
 
             <Button
@@ -254,6 +260,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:layout_weight="1"
+                android:background="@drawable/backgroundlayout"
                 android:text="Cancel" />
         </LinearLayout>
 
