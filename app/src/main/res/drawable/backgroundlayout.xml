@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Définir la couleur semi-transparente -->
-    <solid android:color="#92266985"/> <!-- #80 est l'alpha (transparence) et #FFFFFF est la couleur blanche -->
+    <solid android:color="#266985"/>
 
-    <!-- Coins arrondis -->
-    <corners android:radius="16dp" /> <!-- Vous pouvez ajuster cette valeur pour modifier le rayon des coins -->
+    <corners android:radius="16dp" />
 
-    <!-- Optionnel: ajouter une bordure -->
-    <stroke android:color="@color/black" android:width="2dp"/> <!-- Bordure grise claire -->
+    <stroke android:color="@color/black" android:width="2dp"/>
 </shape>
