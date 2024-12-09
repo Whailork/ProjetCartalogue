@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -58,9 +59,11 @@ public class LoginPage extends AppCompatActivity {
 
             if(strUsername.isEmpty() || strPassword.isEmpty()){
                 invalidEntry = true;
+                Toast toastChampVide = new Toast(this);
+                toastChampVide.setText("Un ou plusieurs champs sont vides");
+                toastChampVide.show();
                 //display message pour dire qu'un ou plusieurs champs sont vides
             }
-
 
             //on cherche dans la bd pour voir s'il y a des cartes associées au user
 
@@ -82,6 +85,10 @@ public class LoginPage extends AppCompatActivity {
                             else{
                                 //mauvais  password avec un user existant
                                 //on affiche un message d'erreur et on annule la connexion
+
+                                Toast toastPassword = new Toast(this);
+                                toastPassword.setText("Mauvais password");
+                                toastPassword.show();
                                 invalidEntry = true;
                                 break;
                             }

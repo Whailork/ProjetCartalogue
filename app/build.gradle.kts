@@ -1,3 +1,5 @@
+import com.android.tools.r8.internal.pl
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -47,7 +49,7 @@ dependencies {
     implementation (libs.material.v123alpha04)
     implementation (libs.recyclerview)
     implementation (libs.cardview)
-    implementation (libs.room.runtime.v250 ) // Use the latest version available
-    annotationProcessor (libs.room.compiler)  // For Java projects
+    implementation (libs.room.runtime.v250 )
+    annotationProcessor (libs.room.compiler)
     implementation (libs.gson)
 }
